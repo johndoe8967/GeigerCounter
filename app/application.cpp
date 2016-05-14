@@ -14,8 +14,12 @@
  */
 #include <user_config.h>
 #include <SmingCore/SmingCore.h>
+#include <SmingCore/Network/TelnetServer.h>
+#include <SmingCore/Debug.h>
+
 #include <HardwarePWM.h>
 
+#include "../include/SetPWMCmd.h"
 #include "../include/SyncNtpDelegate.h"
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
@@ -30,6 +34,10 @@ uint8_t pwm_pin[1] = { 4 }; // List of pins that you want to connect to pwm
 
 HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
+TelnetServer telnet;
+SetPWMCmd setPWMCmd;
+
+
 
 Timer procTimer;
 
@@ -65,9 +73,22 @@ uint32 actMicros = micros();
 	}
 }
 
+void setPWM(unsigned int duty) {
+	if (duty < HW_pwm.getMaxDuty()) {
+		HW_pwm.analogWrite(4, duty);
+	}
+}
+
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
+	telnet.listen(23);
+	telnet.enableDebug(true);
+	debugf("\r\n=== TelnetServer SERVER STARTED ===");
+	debugf("==============================\r\n");
+
+	setPWMCmd.initCommand(SetPWMDelegate(&setPWM));
+
 	syncNTP = new SyncNTP();
 }
 
@@ -81,6 +102,9 @@ void connectFail()
 void init() {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial.systemDebugOutput(true); // Enable debug output to serial
+
+	commandHandler.registerSystemCommands();
+
 
 	// WIFI not needed for demo. So disabling WIFI.
 	WifiStation.enable(true);
@@ -99,6 +123,4 @@ void init() {
 	SystemClock.setTimeZone(2);
 
 	WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
-
-
 }
