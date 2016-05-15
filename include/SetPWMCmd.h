@@ -10,19 +10,23 @@
 #include "../Services/CommandProcessing/CommandProcessingIncludes.h"
 
 typedef Delegate<void(unsigned int duty)> SetPWMDelegate;
+typedef Delegate<void(unsigned int duty)> SetTimeDelegate;
 
 class SetPWMCmd
 {
 public:
 	SetPWMCmd();
 	virtual ~SetPWMCmd();
-	void initCommand(SetPWMDelegate delegate);
+	void initCommand(SetPWMDelegate delegate, SetTimeDelegate delegate2);
 
 private:
 	bool status = true;
 	unsigned int duty = 0;
+	uint32 measureTime = 60;
 	void processSetPWMCmd(String commandLine, CommandOutput* commandOutput);
-	SetPWMDelegate setPWM;
+	void processSetTime(String commandLine, CommandOutput* commandOutput);
+	SetPWMDelegate setPWM = null;
+	SetTimeDelegate setTime = null;
 
 };
 

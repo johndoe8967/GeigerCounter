@@ -7,7 +7,7 @@ class SyncNTP
 public:
 	SyncNTP()
 	{
-		ntpcp = new NtpClient("pool.ntp.org", 30, NtpTimeResultDelegate(&SyncNTP::ntpResult, this));
+		ntpcp = new NtpClient("pool.ntp.org", 60, NtpTimeResultDelegate(&SyncNTP::ntpResult, this));
 	};
 
 	void ntpResult(NtpClient& client, time_t ntpTime)

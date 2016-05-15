@@ -28,9 +28,9 @@
 	#define WIFI_PWD "PleaseEnterPass"
 #endif
 
-
-uint8_t pwm_pin[1] = { 4 }; // List of pins that you want to connect to pwm
 #define INT_PIN 0   // GPIO0
+#define PWM_PIN 2	// GPIO2
+uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
 
 HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
@@ -43,8 +43,8 @@ Timer procTimer;
 
 //Geiger Counter Variables
 uint32 event_counter;
-uint32 actMeasureIntervall;		// last measure intervall in us
-uint32 setMeasureIntervall;		// set value for measure intervall in us
+uint32 actMeasureIntervall;					// last measure intervall in us
+uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
 bool doMeasure;
 
 void IRAM_ATTR interruptHandler()
@@ -59,9 +59,19 @@ uint32 actMicros = micros();
 		attachInterrupt(INT_PIN, interruptHandler, FALLING);
 		actMeasureIntervall = actMicros;
 		doMeasure = true;
+		debugf("start measure");
 	} else {
 		auto actIntervall = actMicros - actMeasureIntervall;
-		if (actIntervall > setMeasureIntervall) {
+		bool stopMeasure= false;
+		if (setMeasureIntervall == 0) {
+			if (event_counter >= 100) {
+				stopMeasure = true;
+			}
+		} else if (actIntervall > setMeasureIntervall) {
+			stopMeasure = true;
+		}
+
+		if (stopMeasure) {
 			detachInterrupt(INT_PIN);
 			actMeasureIntervall = actIntervall;
 			// send Measurement
@@ -74,8 +84,18 @@ uint32 actMicros = micros();
 }
 
 void setPWM(unsigned int duty) {
-	if (duty < HW_pwm.getMaxDuty()) {
-		HW_pwm.analogWrite(4, duty);
+	if (duty <= 100) {
+		auto ontime = duty*HW_pwm.getMaxDuty()/100;
+		debugf("pwm ontime: %d",ontime);
+		HW_pwm.analogWrite(PWM_PIN, ontime);
+
+	}
+}
+void setTime(unsigned int time) {
+	if (time <= 3600) {
+		uint32 timeus = time*1000000;
+		debugf("measuretime: %ld", timeus);
+		setMeasureIntervall = timeus;
 	}
 }
 
@@ -87,8 +107,8 @@ void connectOk()
 	debugf("\r\n=== TelnetServer SERVER STARTED ===");
 	debugf("==============================\r\n");
 
-	setPWMCmd.initCommand(SetPWMDelegate(&setPWM));
-
+	setPWMCmd.initCommand(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+	procTimer.start();
 	syncNTP = new SyncNTP();
 }
 
@@ -101,7 +121,7 @@ void connectFail()
 
 void init() {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
-	Serial.systemDebugOutput(true); // Enable debug output to serial
+	Serial.systemDebugOutput(false); // Enable debug output to serial
 
 	commandHandler.registerSystemCommands();
 
@@ -114,9 +134,9 @@ void init() {
 
 	// Setting PWM values on 8 different pins
 	HW_pwm.setPeriod(400);
-	HW_pwm.analogWrite(4, HW_pwm.getMaxDuty());
+	HW_pwm.analogWrite(PWM_PIN, HW_pwm.getMaxDuty());
 
-	procTimer.initializeMs(1000,TimerDelegate(&Loop));
+	procTimer.initializeMs(100,TimerDelegate(&Loop));
 
 
 	// set timezone hourly difference to UTC
