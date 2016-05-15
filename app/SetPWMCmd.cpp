@@ -18,6 +18,7 @@ void SetPWMCmd::initCommand(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDele
 {
 	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&SetPWMCmd::processSetPWMCmd,this)));
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&SetPWMCmd::processSetTime,this)));
+
 	setPWM = pwmDelegate;
 	setTime = timeDelegate;
 }

@@ -21,6 +21,7 @@ ESPTOOL2 = /opt/esp-open-sdk/esptool2/esptool2
 ## MacOS / Linux
 # SMING_HOME = /opt/sming/Sming
 SMING_HOME = ../../Sming
+#SMING_HOME = /Users/johndoe/Projects/Sming/Sming
 
 ## COM port parameter is reqruied to flash firmware correctly.
 ## Windows: 

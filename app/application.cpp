@@ -19,6 +19,7 @@
 
 #include <HardwarePWM.h>
 
+#include "../include/sendData.h"
 #include "../include/SetPWMCmd.h"
 #include "../include/SyncNtpDelegate.h"
 
@@ -50,7 +51,7 @@ bool doMeasure;
 void IRAM_ATTR interruptHandler()
 {
 	event_counter++;
-	debugf( "!!!Event");
+	Debug.printf( "!!!Event\r\n");
 }
 
 void Loop() {
@@ -59,7 +60,7 @@ uint32 actMicros = micros();
 		attachInterrupt(INT_PIN, interruptHandler, FALLING);
 		actMeasureIntervall = actMicros;
 		doMeasure = true;
-		debugf("start measure");
+		Debug.printf("start measure\r\n");
 	} else {
 		auto actIntervall = actMicros - actMeasureIntervall;
 		bool stopMeasure= false;
@@ -75,8 +76,9 @@ uint32 actMicros = micros();
 			detachInterrupt(INT_PIN);
 			actMeasureIntervall = actIntervall;
 			// send Measurement
-			debugf("Events: %ld",event_counter);
-			debugf("Interfall: %ld", actMeasureIntervall);
+			Debug.printf("Events: %ld ",event_counter);
+			Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
+			sendData(event_counter, actMeasureIntervall);
 			doMeasure = false;
 			event_counter = 0;
 		}
@@ -86,7 +88,7 @@ uint32 actMicros = micros();
 void setPWM(unsigned int duty) {
 	if (duty <= 100) {
 		auto ontime = duty*HW_pwm.getMaxDuty()/100;
-		debugf("pwm ontime: %d",ontime);
+		Debug.printf("pwm ontime: %d\r\n",ontime);
 		HW_pwm.analogWrite(PWM_PIN, ontime);
 
 	}
@@ -94,16 +96,36 @@ void setPWM(unsigned int duty) {
 void setTime(unsigned int time) {
 	if (time <= 3600) {
 		uint32 timeus = time*1000000;
-		debugf("measuretime: %ld", timeus);
+		Debug.printf("measuretime: %ld\r\n", timeus);
 		setMeasureIntervall = timeus;
 	}
+}
+
+void setTelnetDebugOn(String commandLine, CommandOutput* commandOutput)
+{
+	telnet.enableDebug(true);
+	commandOutput->printf("debug telnet on\r\n");
+	Debug.start();
+	Debug.printf("This is debug after telnet start\r\n");
+
+}
+void setTelnetDebugOff(String commandLine, CommandOutput* commandOutput)
+{
+	telnet.enableDebug(false);
+	commandOutput->printf("debug telnet off\r\n");
+	Debug.stop();
+	Debug.printf("This is debug after telnet start\r\n");
 }
 
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
-	telnet.listen(23);
 	telnet.enableDebug(true);
+	telnet.listen(23);
+
+	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&setTelnetDebugOn)));
+	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&setTelnetDebugOff)));
+
 	debugf("\r\n=== TelnetServer SERVER STARTED ===");
 	debugf("==============================\r\n");
 

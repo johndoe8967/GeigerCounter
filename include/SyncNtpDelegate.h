@@ -13,10 +13,7 @@ public:
 	void ntpResult(NtpClient& client, time_t ntpTime)
 	{
 		SystemClock.setTime(ntpTime, eTZ_UTC);
-		Serial.print("ntpClientDemo Callback Time_t = ");
-		Serial.print(ntpTime);
-		Serial.print(" Time = ");
-		Serial.println(SystemClock.getSystemTimeString());
+		Debug.printf("ntpClientDemo Callback Time_t = %ld Time = %s\r\n",ntpTime,SystemClock.getSystemTimeString().c_str());
 	}
 
 private:
