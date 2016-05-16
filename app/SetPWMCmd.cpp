@@ -4,6 +4,7 @@
  */
 
 #include "../include/SetPWMCmd.h"
+#include "../include/AppSettings.h"
 
 SetPWMCmd::SetPWMCmd()
 {
@@ -14,8 +15,23 @@ SetPWMCmd::~SetPWMCmd()
 {
 }
 
+void SetPWMCmd::SaveSettings() {
+	AppSettings.measureTime = measureTime;
+	AppSettings.duty = duty;
+	AppSettings.save();
+}
+
 void SetPWMCmd::initCommand(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate)
 {
+	AppSettings.load();
+
+	if (AppSettings.exist()) {
+		measureTime = AppSettings.measureTime;
+		duty = AppSettings.duty;
+	} else {
+		SaveSettings();
+	}
+
 	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&SetPWMCmd::processSetPWMCmd,this)));
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&SetPWMCmd::processSetTime,this)));
 
@@ -52,6 +68,7 @@ void SetPWMCmd::processSetTime(String commandLine, CommandOutput* commandOutput)
 		if (setPWM) {
 			setTime(measureTime);
 		}
+		SaveSettings();
 	}
 }
 void SetPWMCmd::processSetPWMCmd(String commandLine, CommandOutput* commandOutput)
@@ -91,6 +108,7 @@ void SetPWMCmd::processSetPWMCmd(String commandLine, CommandOutput* commandOutpu
 				setPWM(0);
 			}
 		}
+		SaveSettings();
 	}
 }
 

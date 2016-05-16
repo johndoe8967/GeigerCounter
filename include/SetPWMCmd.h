@@ -20,9 +20,10 @@ public:
 	void initCommand(SetPWMDelegate delegate, SetTimeDelegate delegate2);
 
 private:
+	void SaveSettings();
 	bool status = true;
 	unsigned int duty = 0;
-	uint32 measureTime = 60;
+	unsigned int measureTime = 60;
 	void processSetPWMCmd(String commandLine, CommandOutput* commandOutput);
 	void processSetTime(String commandLine, CommandOutput* commandOutput);
 	SetPWMDelegate setPWM = null;

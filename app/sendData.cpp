@@ -7,6 +7,7 @@
 #include "../include/sendData.h"
 #include <SmingCore/Debug.h>
 
+#define doseRatio 175.43
 
 //#define useRadmon
 String RadmonUserName = "-------";
@@ -41,7 +42,6 @@ void sendData(uint32 events, uint32 intervall) {
 	if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 
 	float cpm = float(events)/ (float(intervall)/60000000.0);
-#define doseRatio 175.43
 	float dose = cpm / doseRatio;
 
 	Debug.printf ("CPM: %f Dose: %f Time: %s\r\n", cpm, dose, SystemClock.now(eTZ_UTC).toISO8601().c_str());

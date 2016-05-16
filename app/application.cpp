@@ -146,7 +146,7 @@ void init() {
 	Serial.systemDebugOutput(false); // Enable debug output to serial
 
 	commandHandler.registerSystemCommands();
-
+	spiffs_mount(); // Mount file system, in order to work with files
 
 	// WIFI not needed for demo. So disabling WIFI.
 	WifiStation.enable(true);
