@@ -44,43 +44,46 @@ Timer procTimer;
 
 //Geiger Counter Variables
 uint32 event_counter;
-uint32 actMeasureIntervall;					// last measure intervall in us
+uint32 actMeasureIntervall = 0;				// last measure intervall in us
 uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
 bool doMeasure;
 
 void IRAM_ATTR interruptHandler()
 {
 	event_counter++;
-	Debug.printf( "!!!Event\r\n");
+//	Debug.printf( "!!!Event\r\n");
 }
 
 void Loop() {
-uint32 actMicros = micros();
-	if (!doMeasure) {
+	uint32 actMicros = micros();
+	auto actIntervall = actMicros - actMeasureIntervall;
+	bool stopMeasure= false;
+
+	if (setMeasureIntervall == 0) {
+		if (event_counter >= 100) {
+			stopMeasure = true;
+		}
+	} else {
+		stopMeasure = true;
+	}
+
+	if (stopMeasure) {
+		detachInterrupt(INT_PIN);
+		actMeasureIntervall = actIntervall;
+		// send Measurement
+		Debug.printf("Events: %ld ",event_counter);
+		Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
+		sendData(event_counter, actMeasureIntervall);
+		doMeasure = false;
+		event_counter = 0;
 		attachInterrupt(INT_PIN, interruptHandler, FALLING);
 		actMeasureIntervall = actMicros;
 		doMeasure = true;
 		Debug.printf("start measure\r\n");
-	} else {
-		auto actIntervall = actMicros - actMeasureIntervall;
-		bool stopMeasure= false;
-		if (setMeasureIntervall == 0) {
-			if (event_counter >= 100) {
-				stopMeasure = true;
-			}
-		} else if (actIntervall > setMeasureIntervall) {
-			stopMeasure = true;
-		}
-
-		if (stopMeasure) {
-			detachInterrupt(INT_PIN);
-			actMeasureIntervall = actIntervall;
-			// send Measurement
-			Debug.printf("Events: %ld ",event_counter);
-			Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
-			sendData(event_counter, actMeasureIntervall);
-			doMeasure = false;
-			event_counter = 0;
+		if (setMeasureIntervall==0) {
+			procTimer.setIntervalUs(100);
+		} else {
+			procTimer.setIntervalUs(setMeasureIntervall);
 		}
 	}
 }
