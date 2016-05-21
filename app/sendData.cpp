@@ -38,11 +38,20 @@ void onDataSent(HttpClient& client, bool successful)
 	}
 }
 
+#define teststable
+	float dose = 0;
+
 void sendData(uint32 events, uint32 intervall) {
 	if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 
 	float cpm = float(events)/ (float(intervall)/60000000.0);
-	float dose = cpm / doseRatio;
+
+#define teststable
+#ifdef teststable
+	dose++;
+#else
+	dose = cpm / doseRatio;
+#endif
 
 	Debug.printf ("CPM: %f Dose: %f Time: %s\r\n", cpm, dose, SystemClock.now(eTZ_UTC).toISO8601().c_str());
 
@@ -68,8 +77,8 @@ void sendData(uint32 events, uint32 intervall) {
 	url += dose;
 	url += "&field3=";
 	url += WifiStation.getRssi();
-	url += "&created_at=";
-	url += SystemClock.now(eTZ_UTC).toISO8601();
+//	url += "&created_at=";
+//	url += SystemClock.now(eTZ_UTC).toISO8601();
 	thingSpeak.downloadString(url, onDataSent);
 #endif
 }
