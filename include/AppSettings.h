@@ -14,8 +14,9 @@
 
 struct ApplicationSettingsStorage
 {
-	unsigned int duty = 0;
+	unsigned int pwmDuty = 0;
 	unsigned int measureTime = 60;
+	bool pwmState = true;
 
 	void load()
 	{
@@ -31,10 +32,11 @@ struct ApplicationSettingsStorage
 
 			JsonObject& geiger = root["geiger"];
 			measureTime = geiger["measureTime"];
-			duty = geiger["duty"];
+			pwmDuty = geiger["duty"];
+			pwmState = geiger["pwmstate"];
 
 			debugf("Appsettings time: %d\r\n",measureTime);
-			debugf("Appsettings duty: %d\r\n",duty);
+			debugf("Appsettings duty: %d\r\n",pwmDuty);
 
 			delete[] jsonString;
 		}
@@ -48,10 +50,11 @@ struct ApplicationSettingsStorage
 		JsonObject& geiger = jsonBuffer.createObject();
 		root["geiger"] = geiger;
 		geiger["measureTime"] = measureTime;
-		geiger["duty"] = duty;
+		geiger["duty"] = pwmDuty;
+		geiger["pwmstate"] = pwmState;
 
 		debugf("Appsettings time: %d\r\n",measureTime);
-		debugf("Appsettings duty: %d\r\n",duty);
+		debugf("Appsettings duty: %d\r\n",pwmDuty);
 
 		String rootString;
 		root.printTo(rootString);

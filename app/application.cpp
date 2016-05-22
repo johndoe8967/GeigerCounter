@@ -14,13 +14,12 @@
  */
 #include <user_config.h>
 #include <SmingCore/SmingCore.h>
-#include <SmingCore/Network/TelnetServer.h>
 #include <SmingCore/Debug.h>
 
 #include <HardwarePWM.h>
 
+#include "../include/CommandClass.h"
 #include "../include/sendData.h"
-#include "../include/SetPWMCmd.h"
 #include "../include/SyncNtpDelegate.h"
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
@@ -35,10 +34,7 @@ uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pw
 
 HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
-TelnetServer telnet;
-SetPWMCmd setPWMCmd;
-
-
+CommandClass *commands;
 
 Timer procTimer;
 
@@ -51,7 +47,6 @@ bool doMeasure;
 void IRAM_ATTR interruptHandler()
 {
 	event_counter++;
-//	Debug.printf( "!!!Event\r\n");
 }
 
 void Loop() {
@@ -104,35 +99,12 @@ void setTime(unsigned int time) {
 	}
 }
 
-void setTelnetDebugOn(String commandLine, CommandOutput* commandOutput)
-{
-	telnet.enableDebug(true);
-	commandOutput->printf("debug telnet on\r\n");
-	Debug.start();
-	Debug.printf("This is debug after telnet start\r\n");
-
-}
-void setTelnetDebugOff(String commandLine, CommandOutput* commandOutput)
-{
-	telnet.enableDebug(false);
-	commandOutput->printf("debug telnet off\r\n");
-	Debug.stop();
-	Debug.printf("This is debug after telnet start\r\n");
-}
 
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
-	telnet.enableDebug(true);
-	telnet.listen(23);
-
-	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&setTelnetDebugOn)));
-	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&setTelnetDebugOff)));
-
-	debugf("\r\n=== TelnetServer SERVER STARTED ===");
-	debugf("==============================\r\n");
-
-	setPWMCmd.initCommand(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+	commands = new CommandClass();
+	commands->init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
 	procTimer.start();
 	syncNTP = new SyncNTP();
 }
@@ -157,12 +129,11 @@ void init() {
 
 	WifiAccessPoint.enable(false);
 
-	// Setting PWM values on 8 different pins
+	// Setting PWM period to 2,5kHz
 	HW_pwm.setPeriod(400);
-	HW_pwm.analogWrite(PWM_PIN, HW_pwm.getMaxDuty());
 
+	// init timer for first start after 100ms
 	procTimer.initializeMs(100,TimerDelegate(&Loop));
-
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
