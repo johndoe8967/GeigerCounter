@@ -12,7 +12,7 @@
 
 ## MacOS / Linux:
 ESP_HOME = /opt/esp-open-sdk
-ESPTOOL2 = /opt/esp-open-sdk/esptool2/esptool2
+ESPTOOL2 = /opt/esp-open-sdk/utils/esptool2
 
 ## SMING_HOME sets the path where Sming framework is located.
 ## Windows:
