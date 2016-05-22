@@ -60,7 +60,7 @@ void Loop() {
 	bool stopMeasure= false;
 
 	if (setMeasureIntervall == 0) {
-		if (event_counter >= 100) {
+		if ((event_counter >= 100) && (actIntervall > 15000000)) {
 			stopMeasure = true;
 		}
 	} else {
