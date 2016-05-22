@@ -81,9 +81,9 @@ void Loop() {
 		doMeasure = true;
 		Debug.printf("start measure\r\n");
 		if (setMeasureIntervall==0) {
-			procTimer.setIntervalUs(100);
+			procTimer.setIntervalMs(100);
 		} else {
-			procTimer.setIntervalUs(setMeasureIntervall);
+			procTimer.setIntervalUs(setMeasureIntervall-(micros()-actMicros));
 		}
 	}
 }
