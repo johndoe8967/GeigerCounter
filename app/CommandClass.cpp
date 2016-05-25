@@ -23,7 +23,7 @@ void CommandClass::SaveSettings() {
 	AppSettings.save();
 }
 
-void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate)
+void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate, SetDoseRatioDelegate doseDelegate)
 {
 	telnet = new TelnetServer();
 	telnet->enableDebug(true);
@@ -38,12 +38,14 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 		measureTime = AppSettings.measureTime;
 		pwmDuty = AppSettings.pwmDuty;
 		pwmState = AppSettings.pwmState;
+		doseRatio = AppSettings.doseRatio;
 	} else {
 		SaveSettings();
 	}
 
 	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&CommandClass::processSetPWMCmd,this)));
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&CommandClass::processSetTime,this)));
+	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOff,this)));
 
@@ -59,6 +61,11 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	setTime = timeDelegate;
 	if (setTime) {
 		setTime(measureTime);
+	}
+
+	setDoseRatio = doseDelegate;
+	if (setDoseRatio) {
+		setDoseRatio(doseRatio);
 	}
 
 }
@@ -152,5 +159,34 @@ void CommandClass::processSetPWMCmd(String commandLine, CommandOutput* commandOu
 		SaveSettings();
 	}
 }
+
+
+void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* commandOutput)
+{
+	Vector<String> commandToken;
+	int numToken = splitString(commandLine, ' ' , commandToken);
+
+	if (numToken == 1)
+	{
+		commandOutput->printf("setdoseratio commands available : \r\n");
+		commandOutput->printf("status : Show cpm/uSv value\r\n");
+		commandOutput->printf("<value>: Set cpm/uSv value\r\n");
+	}
+	else
+	{
+		if (commandToken[1] == "status") {
+			commandOutput->printf("cpm/uSv %f\r\n",doseRatio);
+		} else {
+			auto value = commandToken[1];
+			doseRatio = value.toFloat();
+			commandOutput->printf("cpm/uSv %f\r\n",doseRatio);
+		}
+		if (setDoseRatio) {
+			setDoseRatio(doseRatio);
+		}
+		SaveSettings();
+	}
+}
+
 
 

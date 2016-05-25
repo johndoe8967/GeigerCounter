@@ -43,6 +43,8 @@ uint32 event_counter;
 uint32 actMeasureIntervall = 0;				// last measure intervall in us
 uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
 bool doMeasure;
+float doseRatio;
+
 
 void IRAM_ATTR interruptHandler()
 {
@@ -68,7 +70,10 @@ void Loop() {
 		// send Measurement
 		Debug.printf("Events: %ld ",event_counter);
 		Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
-		sendData(event_counter, actMeasureIntervall);
+
+		float dose = float(event_counter)/ (float(actMeasureIntervall)/60000000.0) / doseRatio;
+
+		sendData(event_counter, actMeasureIntervall, dose);
 		doMeasure = false;
 		event_counter = 0;
 		attachInterrupt(INT_PIN, interruptHandler, FALLING);
@@ -99,12 +104,19 @@ void setTime(unsigned int time) {
 	}
 }
 
+void setDoseRatio(float newDoseRatio) {
+	if (newDoseRatio > 0) {
+		Debug.printf("doseRatio : %f\r\n", newDoseRatio);
+		doseRatio = newDoseRatio;
+	}
+}
+
 
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
 	commands = new CommandClass();
-	commands->init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+	commands->init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime),SetDoseRatioDelegate(&setDoseRatio));
 	procTimer.start();
 	syncNTP = new SyncNTP();
 }

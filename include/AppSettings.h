@@ -17,6 +17,7 @@ struct ApplicationSettingsStorage
 	unsigned int pwmDuty = 0;
 	unsigned int measureTime = 60;
 	bool pwmState = true;
+	float doseRatio = 8000;
 
 	void load()
 	{
@@ -34,6 +35,7 @@ struct ApplicationSettingsStorage
 			measureTime = geiger["measureTime"];
 			pwmDuty = geiger["duty"];
 			pwmState = geiger["pwmstate"];
+			doseRatio = geiger["doseRatio"];
 
 			debugf("Appsettings time: %d\r\n",measureTime);
 			debugf("Appsettings duty: %d\r\n",pwmDuty);
@@ -52,6 +54,7 @@ struct ApplicationSettingsStorage
 		geiger["measureTime"] = measureTime;
 		geiger["duty"] = pwmDuty;
 		geiger["pwmstate"] = pwmState;
+		geiger["doseRatio"] = doseRatio;
 
 		debugf("Appsettings time: %d\r\n",measureTime);
 		debugf("Appsettings duty: %d\r\n",pwmDuty);
