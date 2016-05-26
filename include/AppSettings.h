@@ -18,7 +18,7 @@ struct ApplicationSettingsStorage
 	unsigned int measureTime = 60;
 	bool pwmState = true;
 	float doseRatio = 8000;
-	String tsAPI = "EA78KMUUOAUOYQAK";
+	String tsAPI;
 
 	void load()
 	{
