@@ -195,7 +195,7 @@ void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOut
 	else
 	{
 		if (commandToken[1] == "status") {
-			commandOutput->printf("API %s\r\n",AppSettings.tsAPI);
+			commandOutput->printf("API %s\r\n",AppSettings.tsAPI.c_str());
 		} else {
 			auto value = commandToken[1];
 			AppSettings.tsAPI = value;

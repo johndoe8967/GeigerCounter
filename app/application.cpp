@@ -106,6 +106,14 @@ void setTime(unsigned int time) {
 	}
 }
 
+/*
+void startFTP()
+{
+	// Start FTP server
+	ftp.listen(21);
+	ftp.addUser("me", "123"); // FTP account
+}
+*/
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
