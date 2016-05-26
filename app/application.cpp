@@ -21,6 +21,7 @@
 #include "../include/CommandClass.h"
 #include "../include/sendData.h"
 #include "../include/SyncNtpDelegate.h"
+#include "../include/AppSettings.h"
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
@@ -35,6 +36,8 @@ uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pw
 HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
 CommandClass *commands;
+
+ApplicationSettingsStorage AppSettings;
 
 Timer procTimer;
 

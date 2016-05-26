@@ -72,7 +72,6 @@ struct ApplicationSettingsStorage
 
 	bool exist() { return fileExist(APP_SETTINGS_FILE); }
 };
-
-static ApplicationSettingsStorage AppSettings;
+extern ApplicationSettingsStorage AppSettings;
 
 #endif /* INCLUDE_APPSETTINGS_H_ */
