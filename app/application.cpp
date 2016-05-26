@@ -30,10 +30,10 @@
 #endif
 
 #define INT_PIN 0   // GPIO0
-#define PWM_PIN 2	// GPIO2
-uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
+//#define PWM_PIN 2	// GPIO2
+//uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
 
-HardwarePWM HW_pwm(pwm_pin, 1);
+//HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
 CommandClass *commands;
 
@@ -68,17 +68,17 @@ void Loop() {
 	}
 
 	if (stopMeasure) {
-		detachInterrupt(INT_PIN);
+//		detachInterrupt(INT_PIN);
 		actMeasureIntervall = actIntervall;
 		// send Measurement
 		Debug.printf("Events: %ld ",event_counter);
 		Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
 
-
-		sendData(event_counter, actMeasureIntervall);
-		doMeasure = false;
+		auto events = event_counter;
 		event_counter = 0;
-		attachInterrupt(INT_PIN, interruptHandler, FALLING);
+		sendData(events, actMeasureIntervall);
+		doMeasure = false;
+//		attachInterrupt(INT_PIN, interruptHandler, RISING);
 		actMeasureIntervall = actMicros;
 		doMeasure = true;
 		Debug.printf("start measure\r\n");
@@ -91,12 +91,12 @@ void Loop() {
 }
 
 void setPWM(unsigned int duty) {
-	if (duty <= 100) {
+/*	if (duty <= 100) {
 		auto ontime = duty*HW_pwm.getMaxDuty()/100;
 		Debug.printf("pwm ontime: %d\r\n",ontime);
 		HW_pwm.analogWrite(PWM_PIN, ontime);
 
-	}
+	}*/
 }
 void setTime(unsigned int time) {
 	if (time <= 3600) {
@@ -143,14 +143,18 @@ void init() {
 
 	WifiAccessPoint.enable(false);
 
+	pinMode(INT_PIN, INPUT);
+
+
 	// Setting PWM period to 2,5kHz
-	HW_pwm.setPeriod(400);
+//	HW_pwm.setPeriod(1000);
 
 	// init timer for first start after 100ms
 	procTimer.initializeMs(100,TimerDelegate(&Loop));
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
+	attachInterrupt(INT_PIN, interruptHandler, RISING);
 
 	WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
 }
