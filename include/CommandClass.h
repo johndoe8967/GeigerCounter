@@ -13,7 +13,6 @@
 
 typedef Delegate<void(unsigned int pwmDuty)> SetPWMDelegate;
 typedef Delegate<void(unsigned int time)> SetTimeDelegate;
-typedef Delegate<void(float newDoseRatio)> SetDoseRatioDelegate;
 
 
 class CommandClass
@@ -21,7 +20,7 @@ class CommandClass
 public:
 	CommandClass();
 	virtual ~CommandClass();
-	void init(SetPWMDelegate delegate, SetTimeDelegate delegate2, SetDoseRatioDelegate delegate3);
+	void init(SetPWMDelegate delegate, SetTimeDelegate delegate2);
 
 private:
 	TelnetServer *telnet;
@@ -44,7 +43,6 @@ private:
 
 	SetPWMDelegate setPWM = null;
 	SetTimeDelegate setTime = null;
-	SetDoseRatioDelegate setDoseRatio = null;
 
 };
 

@@ -42,10 +42,11 @@ void onDataSent(HttpClient& client, bool successful)
 }
 
 
-void sendData(uint32 events, uint32 intervall, float dose) {
+void sendData(uint32 events, uint32 intervall) {
 	if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 
 	float cpm = float(events)/ (float(intervall)/60000000.0);
+	float dose = cpm / AppSettings.doseRatio;
 
 
 	Debug.printf ("CPM: %f Dose: %f Time: %s\r\n", cpm, dose, SystemClock.now(eTZ_UTC).toISO8601().c_str());

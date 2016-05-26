@@ -19,10 +19,11 @@ void CommandClass::SaveSettings() {
 	AppSettings.measureTime = measureTime;
 	AppSettings.pwmDuty = pwmDuty;
 	AppSettings.pwmState = pwmState;
+	AppSettings.doseRatio = doseRatio;
 	AppSettings.save();
 }
 
-void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate, SetDoseRatioDelegate doseDelegate)
+void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate)
 {
 	telnet = new TelnetServer();
 	telnet->enableDebug(true);
@@ -39,6 +40,7 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 		pwmState = AppSettings.pwmState;
 		doseRatio = AppSettings.doseRatio;
 	} else {
+		AppSettings.tsAPI = "---";
 		SaveSettings();
 	}
 
@@ -62,12 +64,6 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	if (setTime) {
 		setTime(measureTime);
 	}
-
-	setDoseRatio = doseDelegate;
-	if (setDoseRatio) {
-		setDoseRatio(doseRatio);
-	}
-
 }
 
 void CommandClass::setTelnetDebugOn(String commandLine, CommandOutput* commandOutput)
@@ -180,9 +176,6 @@ void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* comman
 			auto value = commandToken[1];
 			doseRatio = value.toFloat();
 			commandOutput->printf("cpm/uSv %f\r\n",doseRatio);
-		}
-		if (setDoseRatio) {
-			setDoseRatio(doseRatio);
 		}
 		SaveSettings();
 	}
