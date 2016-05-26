@@ -31,9 +31,6 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	debugf("\r\n=== TelnetServer SERVER STARTED ===");
 	debugf("==============================\r\n");
 
-
-	AppSettings.load();
-
 	if (AppSettings.exist()) {
 		measureTime = AppSettings.measureTime;
 		pwmDuty = AppSettings.pwmDuty;

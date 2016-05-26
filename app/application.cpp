@@ -137,9 +137,11 @@ void init() {
 	commandHandler.registerSystemCommands();
 	spiffs_mount(); // Mount file system, in order to work with files
 
+	AppSettings.load();
+
 	// WIFI not needed for demo. So disabling WIFI.
 	WifiStation.enable(true);
-	WifiStation.config(WIFI_SSID, WIFI_PWD); // Put you SSID and Password here
+	WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 
 	WifiAccessPoint.enable(false);
 

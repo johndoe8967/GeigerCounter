@@ -19,6 +19,8 @@ struct ApplicationSettingsStorage
 	bool pwmState = true;
 	float doseRatio = 8000;
 	String tsAPI;
+	String WLANSSID;
+	String WLANPWD;
 
 	void load()
 	{
@@ -38,10 +40,8 @@ struct ApplicationSettingsStorage
 			pwmState = geiger["pwmstate"];
 			doseRatio = geiger["doseRatio"];
 			tsAPI = geiger["thingspeak"].asString();
-
-
-			debugf("Appsettings time: %d\r\n",measureTime);
-			debugf("Appsettings duty: %d\r\n",pwmDuty);
+			WLANSSID = geiger["WLANSSID"].asString();
+			WLANPWD = geiger["WLANPWD"].asString();
 
 			delete[] jsonString;
 		}
@@ -63,6 +63,8 @@ struct ApplicationSettingsStorage
 		debugf("Appsettings duty: %d\r\n",pwmDuty);
 
 		geiger["thingspeak"] = tsAPI;
+		geiger["WLANSSID"] = WLANSSID;
+		geiger["WLANPWD"] = WLANPWD;
 
 		String rootString;
 		root.printTo(rootString);
