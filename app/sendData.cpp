@@ -6,6 +6,8 @@
  */
 #include "../include/sendData.h"
 #include <SmingCore/Debug.h>
+#include "../include/AppSettings.h"
+
 
 //#define useRadmon
 String RadmonUserName = "-------";
@@ -13,10 +15,13 @@ String RadmonPassWord = "-------";
 String RadmonHost = "http://radmon.org";     // no need to change this
 
 #define useThingSpeak
-String writeAPI = "EA78KMUUOAUOYQAK";
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
 HttpClient radmon;
+
+String getTSAPI () {
+	return AppSettings.tsAPI;
+}
 
 void onDataSent(HttpClient& client, bool successful)
 {
@@ -60,7 +65,7 @@ void sendData(uint32 events, uint32 intervall, float dose) {
 #ifdef useThingSpeak
 	url = ThingSpeakHost;
 	url += "/update?key=";
-	url += writeAPI;
+	url += getTSAPI();
 	url += "&field1=";
 	url += cpm;
 	url += "&field2=";

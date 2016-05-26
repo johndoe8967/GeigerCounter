@@ -38,6 +38,7 @@ private:
 	void processSetPWMCmd(String commandLine, CommandOutput* commandOutput);
 	void processSetTime(String commandLine, CommandOutput* commandOutput);
 	void processSetDoseRatio(String commandLine, CommandOutput* commandOutput);
+	void processSetTSAPI(String commandLine, CommandOutput* commandOutput);
 	void setTelnetDebugOn(String commandLine, CommandOutput* commandOutput);
 	void setTelnetDebugOff(String commandLine, CommandOutput* commandOutput);
 

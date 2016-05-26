@@ -18,6 +18,7 @@ struct ApplicationSettingsStorage
 	unsigned int measureTime = 60;
 	bool pwmState = true;
 	float doseRatio = 8000;
+	String tsAPI = "EA78KMUUOAUOYQAK";
 
 	void load()
 	{
@@ -36,6 +37,8 @@ struct ApplicationSettingsStorage
 			pwmDuty = geiger["duty"];
 			pwmState = geiger["pwmstate"];
 			doseRatio = geiger["doseRatio"];
+			tsAPI = geiger["thingspeak"].asString();
+
 
 			debugf("Appsettings time: %d\r\n",measureTime);
 			debugf("Appsettings duty: %d\r\n",pwmDuty);
@@ -58,6 +61,8 @@ struct ApplicationSettingsStorage
 
 		debugf("Appsettings time: %d\r\n",measureTime);
 		debugf("Appsettings duty: %d\r\n",pwmDuty);
+
+		geiger["thingspeak"] = tsAPI;
 
 		String rootString;
 		root.printTo(rootString);

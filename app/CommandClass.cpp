@@ -4,7 +4,6 @@
  */
 
 #include "../include/CommandClass.h"
-
 #include "../include/AppSettings.h"
 
 CommandClass::CommandClass()
@@ -46,6 +45,7 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&CommandClass::processSetPWMCmd,this)));
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&CommandClass::processSetTime,this)));
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
+	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOff,this)));
 
@@ -188,5 +188,28 @@ void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* comman
 	}
 }
 
+void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOutput)
+{
+	Vector<String> commandToken;
+	int numToken = splitString(commandLine, ' ' , commandToken);
 
+	if (numToken == 1)
+	{
+		commandOutput->printf("settsapi commands available : \r\n");
+		commandOutput->printf("status : Show ThingSpeak API\r\n");
+		commandOutput->printf("<value>: Set ThingSpeak API\r\n");
+	}
+	else
+	{
+		if (commandToken[1] == "status") {
+			commandOutput->printf("API %s\r\n",AppSettings.tsAPI);
+		} else {
+			auto value = commandToken[1];
+			AppSettings.tsAPI = value;
+			commandOutput->printf("API %s\r\n",AppSettings.tsAPI);
+		}
+		SaveSettings();
+
+	}
+}
 
