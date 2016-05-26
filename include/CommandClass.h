@@ -29,10 +29,10 @@ private:
 	bool pwmState = false;
 	unsigned int pwmDuty = 0;
 	unsigned int measureTime = 60;
-	float doseRatio = 8000;				// 100 Impulse / s ==> 0,0045R/h ==> 45uSv/h
+	float doseRatio = 133.333;			// 100 Impulse / s ==> 0,0045R/h ==> 45uSv/h
 										// 6000 Imuplse / min ==> 0,0045R/h ==> 45uSv/h
 										// 360000 Impulse / h ==> 0,0045R/h ==> 45uSv/h
-										// => 8000 Impulse / uSv
+										// => 133.333 Impulse/min / uSv/h
 
 	void processSetPWMCmd(String commandLine, CommandOutput* commandOutput);
 	void processSetTime(String commandLine, CommandOutput* commandOutput);
