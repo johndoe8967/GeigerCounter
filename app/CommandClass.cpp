@@ -9,10 +9,13 @@
 CommandClass::CommandClass()
 {
 	debugf("SetPWMCmd Instantiating");
+	telnet = new TelnetServer();
+
 }
 
 CommandClass::~CommandClass()
 {
+	delete(telnet);
 }
 
 void CommandClass::SaveSettings() {
@@ -25,7 +28,6 @@ void CommandClass::SaveSettings() {
 
 void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate)
 {
-	telnet = new TelnetServer();
 	telnet->enableDebug(true);
 	telnet-> listen(23);
 	debugf("\r\n=== TelnetServer SERVER STARTED ===");

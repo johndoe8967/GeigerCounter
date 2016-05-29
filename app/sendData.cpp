@@ -10,18 +10,16 @@
 
 
 //#define useRadmon
-String RadmonUserName = "-------";
-String RadmonPassWord = "-------";
+#ifdef useRadmon
 String RadmonHost = "http://radmon.org";     // no need to change this
+HttpClient radmon;
+#endif
 
 #define useThingSpeak
+#ifdef useThingSpeak
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
-HttpClient radmon;
-
-String getTSAPI () {
-	return AppSettings.tsAPI;
-}
+#endif
 
 void onDataSent(HttpClient& client, bool successful)
 {
@@ -42,7 +40,7 @@ void onDataSent(HttpClient& client, bool successful)
 }
 
 
-void sendData(uint32 events, uint32 intervall) {
+void sendData(uint32 events, uint32 intervall, bool send) {
 	if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 
 	float cpm = float(events)/ (float(intervall)/60000000.0);
@@ -52,30 +50,32 @@ void sendData(uint32 events, uint32 intervall) {
 	Debug.printf ("CPM: %f Dose: %f Time: %s\r\n", cpm, dose, SystemClock.now(eTZ_UTC).toISO8601().c_str());
 
 	String url;
+	if (send) {
 #ifdef useRadmon
-	url = RadmonHost;
-	url += "/radmon.php?function=submit&user=";
-	url += RadmonUserName;
-	url += "&password=";
-	url += RadmonPassWord;
-	url += "&value=";
-	url += cpm;
-	url += "&unit=CPM";
-	radmon.downloadString(url, onDataSent);
+		url = RadmonHost;
+		url += "/radmon.php?function=submit&user=";
+		url += AppSettings.RadmonUser;
+		url += "&password=";
+		url += AppSettings.RadmonPWD;
+		url += "&value=";
+		url += cpm;
+		url += "&unit=CPM";
+		radmon.downloadString(url, onDataSent);
 #endif
 #ifdef useThingSpeak
-	url = ThingSpeakHost;
-	url += "/update?key=";
-	url += getTSAPI();
-	url += "&field1=";
-	url += cpm;
-	url += "&field2=";
-	url += dose;
-	url += "&field3=";
-	url += WifiStation.getRssi();
-	url += "&created_at=";
-	url += SystemClock.now(eTZ_UTC).toISO8601();
-	thingSpeak.downloadString(url, onDataSent);
+		url = ThingSpeakHost;
+		url += "/update?key=";
+		url += AppSettings.tsAPI;
+		url += "&field1=";
+		url += cpm;
+		url += "&field2=";
+		url += dose;
+		url += "&field3=";
+		url += WifiStation.getRssi();
+		url += "&created_at=";
+		url += SystemClock.now(eTZ_UTC).toISO8601();
+		thingSpeak.downloadString(url, onDataSent);
+	}
 #endif
 }
 

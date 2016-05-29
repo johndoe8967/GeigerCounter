@@ -30,16 +30,22 @@
 #endif
 
 #define INT_PIN 0   // GPIO0
+#define MODE_PIN 2	// GPIO2
+
+enum {stationary, mobile} mode;
+
+
 //#define PWM_PIN 2	// GPIO2
 //uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
 
 //HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
-CommandClass *commands;
+CommandClass commands;
 
 ApplicationSettingsStorage AppSettings;
 
-Timer procTimer;
+Timer measureTimer;
+Timer backgroundTimer;
 
 //Geiger Counter Variables
 uint32 event_counter;
@@ -47,6 +53,7 @@ uint32 actMeasureIntervall = 0;				// last measure intervall in us
 uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
 bool doMeasure;
 float doseRatio;
+bool online=true;
 
 
 void IRAM_ATTR interruptHandler()
@@ -76,17 +83,65 @@ void Loop() {
 
 		auto events = event_counter;
 		event_counter = 0;
-		sendData(events, actMeasureIntervall);
+		sendData(events, actMeasureIntervall, online);
 		doMeasure = false;
 //		attachInterrupt(INT_PIN, interruptHandler, RISING);
 		actMeasureIntervall = actMicros;
 		doMeasure = true;
 		Debug.printf("start measure\r\n");
 		if (setMeasureIntervall==0) {
-			procTimer.setIntervalMs(100);
+			measureTimer.setIntervalMs(100);
 		} else {
-			procTimer.setIntervalUs(setMeasureIntervall-(micros()-actMicros));
+			measureTimer.setIntervalUs(setMeasureIntervall-(micros()-actMicros));
 		}
+	}
+}
+
+
+// Will be called when WiFi station was connected to AP
+void connectOk()
+{
+	if (!syncNTP) syncNTP = new SyncNTP();
+
+}
+
+// Will be called when WiFi station timeout was reached
+void connectFail()
+{
+	debugf("I'm NOT CONNECTED!");
+	WifiStation.waitConnection(connectOk, 10, connectFail); // Repeat and check again
+}
+
+
+void background() {
+	switch (mode) {
+	case mobile:
+		if (!digitalRead(MODE_PIN)) {
+			mode = stationary;
+
+			WifiStation.enable(true);
+			WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
+
+			WifiAccessPoint.enable(false);
+		}
+		break;
+	case stationary:
+		if (syncNTP) {
+			online = syncNTP->valid;
+		}
+
+		if (digitalRead(MODE_PIN)) {
+			mode = mobile;
+			online = false;
+
+			delete(syncNTP);
+
+			WifiStation.disconnect();
+			WifiStation.enable(false);
+
+			WifiAccessPoint.enable(true);
+		}
+		break;
 	}
 }
 
@@ -106,57 +161,36 @@ void setTime(unsigned int time) {
 	}
 }
 
-/*
-void startFTP()
-{
-	// Start FTP server
-	ftp.listen(21);
-	ftp.addUser("me", "123"); // FTP account
-}
-*/
-// Will be called when WiFi station was connected to AP
-void connectOk()
-{
-	commands = new CommandClass();
-	commands->init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
-	procTimer.start();
-	syncNTP = new SyncNTP();
-}
-
-// Will be called when WiFi station timeout was reached
-void connectFail()
-{
-	debugf("I'm NOT CONNECTED!");
-	WifiStation.waitConnection(connectOk, 10, connectFail); // Repeat and check again
-}
-
 void init() {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial.systemDebugOutput(false); // Enable debug output to serial
 
 	commandHandler.registerSystemCommands();
+	commands.init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+
 	spiffs_mount(); // Mount file system, in order to work with files
 
 	AppSettings.load();
 
 	// WIFI not needed for demo. So disabling WIFI.
-	WifiStation.enable(true);
+	WifiStation.enable(false);
 	WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 
 	WifiAccessPoint.enable(false);
+	WifiAccessPoint.config("RadMon","RadMon", AUTH_WPA_PSK);
 
 	pinMode(INT_PIN, INPUT);
-
+	pinMode(MODE_PIN,INPUT);
 
 	// Setting PWM period to 2,5kHz
 //	HW_pwm.setPeriod(1000);
 
 	// init timer for first start after 100ms
-	procTimer.initializeMs(100,TimerDelegate(&Loop));
+	measureTimer.initializeMs(100,TimerDelegate(&Loop)).start();
+	backgroundTimer.initializeMs(100,TimerDelegate(&background)).start();
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
 	attachInterrupt(INT_PIN, interruptHandler, RISING);
 
-	WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
 }

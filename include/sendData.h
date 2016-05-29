@@ -10,7 +10,7 @@
 #include <SmingCore/SmingCore.h>
 
 
-void sendData(uint32 events, uint32 intervall);
+void sendData(uint32 events, uint32 intervall,bool send);
 
 
 
