@@ -20,9 +20,11 @@ CommandClass::~CommandClass()
 
 void CommandClass::SaveSettings() {
 	AppSettings.measureTime = measureTime;
+	AppSettings.doseRatio = doseRatio;
+#ifdef USEPWM
 	AppSettings.pwmDuty = pwmDuty;
 	AppSettings.pwmState = pwmState;
-	AppSettings.doseRatio = doseRatio;
+#endif
 	AppSettings.save();
 }
 
@@ -35,21 +37,28 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 
 	if (AppSettings.exist()) {
 		measureTime = AppSettings.measureTime;
+#ifdef USEPWM
 		pwmDuty = AppSettings.pwmDuty;
 		pwmState = AppSettings.pwmState;
+#endif
 		doseRatio = AppSettings.doseRatio;
 	} else {
 		AppSettings.tsAPI = "---";
 		SaveSettings();
 	}
 
+#ifdef USEPWM
 	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&CommandClass::processSetPWMCmd,this)));
+#endif
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&CommandClass::processSetTime,this)));
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
+	commandHandler.registerCommand(CommandDelegate("setssid","set wifi ssid","Application",commandFunctionDelegate(&CommandClass::processSetWIFISSID,this)));
+	commandHandler.registerCommand(CommandDelegate("setssid","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOff,this)));
 
+#ifdef USEPWM
 	setPWM = pwmDelegate;
 	if (setPWM) {
 		if (pwmState) {
@@ -58,6 +67,7 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 			setPWM(0);
 		}
 	}
+#endif
 
 	setTime = timeDelegate;
 	if (setTime) {
@@ -89,7 +99,6 @@ void CommandClass::processSetTime(String commandLine, CommandOutput* commandOutp
 
 	if (numToken == 1)
 	{
-		commandOutput->printf("settime commands available : \r\n");
 		commandOutput->printf("auto : auto measure until 100 events\r\n");
 		commandOutput->printf("status : Show pwm status\r\n");
 		commandOutput->printf("<value>: Set time in seconds\r\n");
@@ -114,6 +123,8 @@ void CommandClass::processSetTime(String commandLine, CommandOutput* commandOutp
 		SaveSettings();
 	}
 }
+
+#ifdef USEPWM
 void CommandClass::processSetPWMCmd(String commandLine, CommandOutput* commandOutput)
 {
 	Vector<String> commandToken;
@@ -121,7 +132,6 @@ void CommandClass::processSetPWMCmd(String commandLine, CommandOutput* commandOu
 
 	if (numToken == 1)
 	{
-		commandOutput->printf("setpwm commands available : \r\n");
 		commandOutput->printf("on   : Set pwm ON\r\n");
 		commandOutput->printf("off  : Set pwm OFF\r\n");
 		commandOutput->printf("status : Show pwm status\r\n");
@@ -154,7 +164,7 @@ void CommandClass::processSetPWMCmd(String commandLine, CommandOutput* commandOu
 		SaveSettings();
 	}
 }
-
+#endif
 
 void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* commandOutput)
 {
@@ -163,7 +173,6 @@ void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* comman
 
 	if (numToken == 1)
 	{
-		commandOutput->printf("setdoseratio commands available : \r\n");
 		commandOutput->printf("status : Show cpm/uSv value\r\n");
 		commandOutput->printf("<value>: Set cpm/uSv value\r\n");
 	}
@@ -187,7 +196,6 @@ void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOut
 
 	if (numToken == 1)
 	{
-		commandOutput->printf("settsapi commands available : \r\n");
 		commandOutput->printf("status : Show ThingSpeak API\r\n");
 		commandOutput->printf("<value>: Set ThingSpeak API\r\n");
 	}
@@ -205,3 +213,29 @@ void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOut
 	}
 }
 
+void CommandClass::processSetWIFISSID(String commandLine, CommandOutput* commandOutput)
+{
+	Vector<String> commandToken;
+	int numToken = splitString(commandLine, ' ' , commandToken);
+
+	if (numToken == 2)
+	{
+		auto value = commandToken[1];
+		AppSettings.WLANSSID = value;
+		commandOutput->printf("SSID %s\r\n",AppSettings.WLANSSID.c_str());
+		SaveSettings();
+	}
+}
+void CommandClass::processSetWIFIPWD(String commandLine, CommandOutput* commandOutput)
+{
+	Vector<String> commandToken;
+	int numToken = splitString(commandLine, ' ' , commandToken);
+
+	if (numToken == 2)
+	{
+		auto value = commandToken[1];
+		AppSettings.WLANPWD = value;
+		commandOutput->printf("PWD %s\r\n",AppSettings.WLANPWD.c_str());
+		SaveSettings();
+	}
+}

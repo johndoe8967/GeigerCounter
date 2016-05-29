@@ -38,6 +38,8 @@ private:
 	void processSetTime(String commandLine, CommandOutput* commandOutput);
 	void processSetDoseRatio(String commandLine, CommandOutput* commandOutput);
 	void processSetTSAPI(String commandLine, CommandOutput* commandOutput);
+	void processSetWIFIPWD(String commandLine, CommandOutput* commandOutput);
+	void processSetWIFISSID(String commandLine, CommandOutput* commandOutput);
 	void setTelnetDebugOn(String commandLine, CommandOutput* commandOutput);
 	void setTelnetDebugOff(String commandLine, CommandOutput* commandOutput);
 

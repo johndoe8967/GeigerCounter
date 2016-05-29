@@ -29,16 +29,17 @@
 	#define WIFI_PWD "PleaseEnterPass"
 #endif
 
-#define INT_PIN 0   // GPIO0
-#define MODE_PIN 2	// GPIO2
+#define INT_PIN 2   // GPIO0
+#define MODE_PIN 0	// GPIO2
 
 enum {stationary, mobile} mode;
 
+#ifdef USEPWM
+#define PWM_PIN 2	// GPIO2
+uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
+HardwarePWM HW_pwm(pwm_pin, 1);
+#endif
 
-//#define PWM_PIN 2	// GPIO2
-//uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
-
-//HardwarePWM HW_pwm(pwm_pin, 1);
 SyncNTP *syncNTP;
 CommandClass commands;
 
@@ -142,16 +143,22 @@ void background() {
 			WifiAccessPoint.enable(true);
 		}
 		break;
+	default:
+		mode = stationary;
+		break;
 	}
 }
 
+
 void setPWM(unsigned int duty) {
-/*	if (duty <= 100) {
+#ifdef USEPWM
+	if (duty <= 100) {
 		auto ontime = duty*HW_pwm.getMaxDuty()/100;
 		Debug.printf("pwm ontime: %d\r\n",ontime);
 		HW_pwm.analogWrite(PWM_PIN, ontime);
 
-	}*/
+	}
+#endif
 }
 void setTime(unsigned int time) {
 	if (time <= 3600) {
@@ -183,7 +190,9 @@ void init() {
 	pinMode(MODE_PIN,INPUT);
 
 	// Setting PWM period to 2,5kHz
-//	HW_pwm.setPeriod(1000);
+#ifdef USEPWM
+	HW_pwm.setPeriod(1000);
+#endif
 
 	// init timer for first start after 100ms
 	measureTimer.initializeMs(100,TimerDelegate(&Loop)).start();

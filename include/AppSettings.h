@@ -5,6 +5,7 @@
  *      Author: Anakod
  */
 
+//#define USEPWM
 #include <SmingCore/SmingCore.h>
 
 #ifndef INCLUDE_APPSETTINGS_H_
@@ -14,9 +15,12 @@
 
 struct ApplicationSettingsStorage
 {
+#ifdef USEPWM
 	unsigned int pwmDuty = 0;
-	unsigned int measureTime = 60;
 	bool pwmState = true;
+#endif
+
+	unsigned int measureTime = 60;
 	float doseRatio = 8000;
 	String tsAPI;
 	String RadmonUser;
@@ -38,8 +42,10 @@ struct ApplicationSettingsStorage
 
 			JsonObject& geiger = root["geiger"];
 			measureTime = geiger["measureTime"];
+#ifdef USEPWM
 			pwmDuty = geiger["duty"];
 			pwmState = geiger["pwmstate"];
+#endif
 			doseRatio = geiger["doseRatio"];
 			tsAPI = geiger["thingspeak"].asString();
 			RadmonUser = geiger["radmonuser"].asString();
@@ -59,8 +65,10 @@ struct ApplicationSettingsStorage
 		JsonObject& geiger = jsonBuffer.createObject();
 		root["geiger"] = geiger;
 		geiger["measureTime"] = measureTime;
+#ifdef USEPWM
 		geiger["duty"] = pwmDuty;
 		geiger["pwmstate"] = pwmState;
+#endif
 		geiger["doseRatio"] = doseRatio;
 
 		geiger["thingspeak"] = tsAPI;
