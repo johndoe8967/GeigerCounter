@@ -9,13 +9,13 @@
 #include "../include/AppSettings.h"
 
 
-//#define useRadmon
+#define useRadmon
 #ifdef useRadmon
 String RadmonHost = "http://radmon.org";     // no need to change this
 HttpClient radmon;
 #endif
 
-#define useThingSpeak
+//#define useThingSpeak
 #ifdef useThingSpeak
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
@@ -41,7 +41,6 @@ void onDataSent(HttpClient& client, bool successful)
 
 
 void sendData(uint32 events, uint32 intervall, bool send) {
-	if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 
 	float cpm = float(events)/ (float(intervall)/60000000.0);
 	float dose = cpm / AppSettings.doseRatio;
@@ -52,6 +51,7 @@ void sendData(uint32 events, uint32 intervall, bool send) {
 	String url;
 	if (send) {
 #ifdef useRadmon
+		if (radmon.isProcessing()) return;
 		url = RadmonHost;
 		url += "/radmon.php?function=submit&user=";
 		url += AppSettings.RadmonUser;
@@ -63,6 +63,7 @@ void sendData(uint32 events, uint32 intervall, bool send) {
 		radmon.downloadString(url, onDataSent);
 #endif
 #ifdef useThingSpeak
+		if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
 		url = ThingSpeakHost;
 		url += "/update?key=";
 		url += AppSettings.tsAPI;
@@ -75,8 +76,8 @@ void sendData(uint32 events, uint32 intervall, bool send) {
 		url += "&created_at=";
 		url += SystemClock.now(eTZ_UTC).toISO8601();
 		thingSpeak.downloadString(url, onDataSent);
-	}
 #endif
+	}
 }
 
 
