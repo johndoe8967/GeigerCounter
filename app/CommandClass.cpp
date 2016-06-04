@@ -8,7 +8,7 @@
 
 CommandClass::CommandClass()
 {
-	debugf("SetPWMCmd Instantiating");
+	debugf("CommandClass Instantiating");
 	telnet = new TelnetServer();
 
 }
@@ -54,7 +54,7 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
 	commandHandler.registerCommand(CommandDelegate("setssid","set wifi ssid","Application",commandFunctionDelegate(&CommandClass::processSetWIFISSID,this)));
-	commandHandler.registerCommand(CommandDelegate("setssid","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
+	commandHandler.registerCommand(CommandDelegate("setpwd","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOff,this)));
 

@@ -29,7 +29,7 @@ private:
 	bool pwmState = false;
 	unsigned int pwmDuty = 0;
 	unsigned int measureTime = 60;
-	float doseRatio = 133.333;			// 100 Impulse / s ==> 0,005R/h ==> 50uSv/h
+	float doseRatio = 120.0;			// 100 Impulse / s ==> 0,005R/h ==> 50uSv/h
 										// 6000 Imuplse / min ==> 0,0050R/h ==> 50uSv/h
 										// 360000 Impulse / h ==> 0,0050R/h ==> 50uSv/h
 										// => 120 Impulse/min / uSv/h

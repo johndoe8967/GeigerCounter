@@ -21,7 +21,7 @@ struct ApplicationSettingsStorage
 #endif
 
 	unsigned int measureTime = 60;
-	float doseRatio = 8000;
+	float doseRatio = 120;
 	String tsAPI;
 	String RadmonUser;
 	String RadmonPWD;

@@ -113,17 +113,19 @@ void connectFail()
 	WifiStation.waitConnection(connectOk, 10, connectFail); // Repeat and check again
 }
 
-
 void background() {
 	switch (mode) {
 	case mobile:
-		if (!digitalRead(MODE_PIN)) {
+		if (digitalRead(MODE_PIN)) {
 			mode = stationary;
+			WifiAccessPoint.enable(false);
 
 			WifiStation.enable(true);
+			debugf("SSID: %s", AppSettings.WLANSSID.c_str());
+			debugf("PWD: %s", AppSettings.WLANPWD.c_str());
+			WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 			WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
 
-			WifiAccessPoint.enable(false);
 		}
 		break;
 	case stationary:
@@ -131,7 +133,7 @@ void background() {
 			online = syncNTP->valid;
 		}
 
-		if (digitalRead(MODE_PIN)) {
+		if (!digitalRead(MODE_PIN)) {
 			mode = mobile;
 			online = false;
 
@@ -140,11 +142,12 @@ void background() {
 			WifiStation.disconnect();
 			WifiStation.enable(false);
 
+			WifiAccessPoint.config("RadMon","RadMon", AUTH_OPEN);
 			WifiAccessPoint.enable(true);
 		}
 		break;
 	default:
-		mode = stationary;
+		mode = mobile;
 		break;
 	}
 }
@@ -172,14 +175,18 @@ void init() {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial.systemDebugOutput(false); // Enable debug output to serial
 
-	commandHandler.registerSystemCommands();
-	commands.init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+	delayMilliseconds(1000);
 
 	spiffs_mount(); // Mount file system, in order to work with files
 
+
+	commandHandler.registerSystemCommands();
+	commands.init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+
 	AppSettings.load();
 
-	// WIFI not needed for demo. So disabling WIFI.
+	mode = mobile;
+
 	WifiStation.enable(false);
 	WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 
@@ -196,7 +203,7 @@ void init() {
 
 	// init timer for first start after 100ms
 	measureTimer.initializeMs(100,TimerDelegate(&Loop)).start();
-	backgroundTimer.initializeMs(100,TimerDelegate(&background)).start();
+	backgroundTimer.initializeMs(5000,TimerDelegate(&background)).start();
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
