@@ -26,4 +26,6 @@ script:
   - export ESP_HOME=$TRAVIS_BUILD_DIR/opt/esp-alt-sdk  
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/opt/esp-alt-sdk/utils/
   - cd $SMING_HOME
+  - make all
+  - cd $TRAVIS_BUILD_DIR/GeigerCounter
   - make all 
