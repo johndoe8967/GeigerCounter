@@ -1,8 +1,15 @@
 /*
  * sendData.cpp
+ * Original Author: https://github.com/johndoe8967
+ *
+ * sends data to ThingSpeak
+ * expects 3 fields:
+ * 		CPM, dose, RSSI
+ *
+ * sends data to RadMon
+ * 		based on GKMon, rewritten to use in Sming framework
  *
  *  Created on: 15.05.2016
- *      Author: johndoe
  */
 #include "../include/sendData.h"
 #include <SmingCore/Debug.h>

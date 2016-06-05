@@ -1,16 +1,17 @@
 /*
- * File: Esp SDK Hardware PWM demo
- * Original Author: https://github.com/hrsavla
+ * File: geigr counter
+ * Original Author: https://github.com/johndoe8967
  *
- * This HardwarePWM library enables Sming framework user to use ESP SDK PWM API
- * Period of PWM is fixed to 1000ms / Frequency = 1khz
- * Duty at 100% = 22222. Duty at 0% = 0
- * You can use function setPeriod() to change frequency/period.
- * Calculate the Duty as per the formulae give in ESP8266 SDK
- * Duty = (Period *1000)/45
+ * a geiger counter application with IoT connection to ThingSpeak and Radmon
  *
- * PWM can be generated on upto 8 pins (ie All pins except pin 16)
- * Created on August 17, 2015, 2:27 PM
+ * detection of radioactive decay events on interrupt pin 0
+ * 2 modes: stationary (wifi client) mobile (wifi SoftAP)
+ *
+ * basic settings are changeable as telnet commands
+ *
+ * optional PWM output for high voltage generation (not tested, may has problem with PWM glitch)
+ *
+ * Created on June 5, 2016
  */
 #include <user_config.h>
 #include <SmingCore/SmingCore.h>

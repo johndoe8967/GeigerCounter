@@ -1,6 +1,12 @@
 #ifndef INCLUDE_SYNCNTPDELEGATE_H_
 #define INCLUDE_SYNCNTPDELEGATE_H_
 
+/*
+ * File: SyncNtpDelegate.h
+ * NTP time synchronization
+ * 	each 5min
+ * 	returns valid on first sync
+ */
 
 class SyncNTP
 {

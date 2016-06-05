@@ -1,5 +1,5 @@
 /*
- * ExampleCommand.h
+ * CommandClass.h
  *
  */
 

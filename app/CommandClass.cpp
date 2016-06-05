@@ -1,6 +1,18 @@
 /*
- * Debug.cpp
+ * CommandClass.cpp
+ * Original Author: https://github.com/johndoe8967
  *
+ * settime | Application | set measure time
+ * setdoseratio | Application | set cpm/uSv ratio
+ * settsapi | Application | set thingspeak API
+ * setssid | Application | set wifi ssid
+ * setpwd | Application | set wifi pwd
+ * debugtelneton | Application | Set telnet debug on
+ * debugtelnetoff | Application | Set telnet debug off
+ *
+ * usage of pwm optional
+ *
+ * Created on June 5, 2016
  */
 
 #include "../include/CommandClass.h"

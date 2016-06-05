@@ -1,8 +1,11 @@
 /*
  * AppSettings.h
  *
- *  Created on: 13 ��� 2015 �.
- *      Author: Anakod
+ * Applikation settings are stored in spiffs
+ *
+ * Created on June 5, 2016
+ *      Original Author: Anakod
+ *      Modified by https://github.com/johndoe8967
  */
 
 //#define USEPWM
