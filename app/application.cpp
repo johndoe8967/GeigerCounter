@@ -29,8 +29,8 @@
 	#define WIFI_PWD "PleaseEnterPass"
 #endif
 
-#define INT_PIN 2   // GPIO0
-#define MODE_PIN 0	// GPIO2
+#define INT_PIN 0   // GPIO0
+#define MODE_PIN 2	// GPIO2
 
 enum {stationary, mobile} mode;
 

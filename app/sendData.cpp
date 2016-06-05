@@ -15,7 +15,7 @@ String RadmonHost = "http://radmon.org";     // no need to change this
 HttpClient radmon;
 #endif
 
-//#define useThingSpeak
+#define useThingSpeak
 #ifdef useThingSpeak
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
