@@ -28,15 +28,7 @@ void onDataSent(HttpClient& client, bool successful)
 	else
 		Debug.printf("Failed\r\n");
 
-	String response = client.getResponseString();
-	Debug.printf("Server response: '%s'\r\n",response.c_str());
-	if (response.length() > 0)
-	{
-		int intVal = response.toInt();
-
-		if (intVal == 0)
-			Debug.printf("Sensor value wasn't accepted. May be we need to wait a little?\r\n");
-	}
+	Debug.printf("Server response: '%s'\r\n",client.getResponseString().c_str());
 }
 
 
