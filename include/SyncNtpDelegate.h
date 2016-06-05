@@ -7,7 +7,7 @@ class SyncNTP
 public:
 	SyncNTP()
 	{
-		ntpcp = new NtpClient("pool.ntp.org", 60, NtpTimeResultDelegate(&SyncNTP::ntpResult, this));
+		ntpcp = new NtpClient("pool.ntp.org", 300, NtpTimeResultDelegate(&SyncNTP::ntpResult, this));
 	};
 	virtual ~SyncNTP() {
 		delete(ntpcp);
@@ -15,8 +15,10 @@ public:
 
 	void ntpResult(NtpClient& client, time_t ntpTime)
 	{
+		time_t time = RTC.getRtcSeconds();
+		Debug.printf("ntpClient TimeDiff = %lu\r\n",time-ntpTime);
 		SystemClock.setTime(ntpTime, eTZ_UTC);
-		Debug.printf("ntpClientDemo Callback Time_t = %ld Time = %s\r\n",ntpTime,SystemClock.getSystemTimeString().c_str());
+		Debug.printf("ntpClient Time = %s\r\n",SystemClock.getSystemTimeString().c_str());
 		valid = true;
 	}
 	bool valid = false;
