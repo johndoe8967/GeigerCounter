@@ -1,4 +1,5 @@
 # GeigerCounter
+[![Build Status](https://travis-ci.org/johndoe8967/GeigerCounter.svg?branch=master)](https://travis-ci.org/johndoe8967/GeigerCounter)
 ESP8266 based geiger counter project
 
 ## Summary
