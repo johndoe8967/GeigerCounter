@@ -11,7 +11,7 @@
 # ESP_HOME = c:/Espressif
 
 ## MacOS / Linux:
-ESP_HOME = /opt/esp-open-sdk
+#ESP_HOME = /opt/esp-open-sdk
 ESPTOOL2 = /opt/esp-open-sdk/utils/esptool2
 
 ## SMING_HOME sets the path where Sming framework is located.
@@ -20,7 +20,7 @@ ESPTOOL2 = /opt/esp-open-sdk/utils/esptool2
 
 ## MacOS / Linux
 # SMING_HOME = /opt/sming/Sming
-SMING_HOME = ../../Sming
+#SMING_HOME += ../../Sming
 #SMING_HOME = /Users/johndoe/Projects/Sming/Sming
 
 ## COM port parameter is reqruied to flash firmware correctly.
