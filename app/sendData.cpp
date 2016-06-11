@@ -28,6 +28,12 @@ String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
 #endif
 
+Timer delayThingSpeak;
+String url;
+float cpm;
+float dose;
+
+
 void onDataSent(HttpClient& client, bool successful)
 {
 	if (successful)
@@ -39,42 +45,57 @@ void onDataSent(HttpClient& client, bool successful)
 }
 
 
+void sendThingSpeak () {
+#ifdef useThingSpeak
+		if (thingSpeak.isProcessing()) {
+			Debug.print("!!!!ThingSpeak not ready -> close");
+			thingSpeak.reset();
+		} else {
+			Debug.print("Delayed sebd ThingSpeak\r\n");
+			url = ThingSpeakHost;
+			url += "/update?key=";
+			url += AppSettings.tsAPI;
+			url += "&field1=";
+			url += cpm;
+			url += "&field2=";
+			url += dose;
+			url += "&field3=";
+			url += WifiStation.getRssi();
+			url += "&created_at=";
+			url += SystemClock.now(eTZ_UTC).toISO8601();
+			thingSpeak.downloadString(url, onDataSent);
+		}
+
+}
+
 void sendData(uint32 events, uint32 intervall, bool send) {
 
-	float cpm = float(events)/ (float(intervall)/60000000.0);
-	float dose = cpm / AppSettings.doseRatio;
+	cpm = float(events)/ (float(intervall)/60000000.0);
+	dose = cpm / AppSettings.doseRatio;
 
 
 	Debug.printf ("CPM: %f Dose: %f Time: %s\r\n", cpm, dose, SystemClock.now(eTZ_UTC).toISO8601().c_str());
 
-	String url;
 	if (send) {
 #ifdef useRadmon
-		if (radmon.isProcessing()) return;
-		url = RadmonHost;
-		url += "/radmon.php?function=submit&user=";
-		url += AppSettings.RadmonUser;
-		url += "&password=";
-		url += AppSettings.RadmonPWD;
-		url += "&value=";
-		url += cpm;
-		url += "&unit=CPM";
-		radmon.downloadString(url, onDataSent);
+		if (radmon.isProcessing()) {
+			Debug.print("!!!!RadMon not ready -> close\r\n");
+			radmon.reset();
+		} else {
+			Debug.print("Send Radmon\r\n");
+			url = RadmonHost;
+			url += "/radmon.php?function=submit&user=";
+			url += AppSettings.RadmonUser;
+			url += "&password=";
+			url += AppSettings.RadmonPWD;
+			url += "&value=";
+			url += cpm;
+			url += "&unit=CPM";
+			radmon.downloadString(url, onDataSent);
+		}
 #endif
-#ifdef useThingSpeak
-		if (thingSpeak.isProcessing()) return; // We need to wait while request processing was completed
-		url = ThingSpeakHost;
-		url += "/update?key=";
-		url += AppSettings.tsAPI;
-		url += "&field1=";
-		url += cpm;
-		url += "&field2=";
-		url += dose;
-		url += "&field3=";
-		url += WifiStation.getRssi();
-		url += "&created_at=";
-		url += SystemClock.now(eTZ_UTC).toISO8601();
-		thingSpeak.downloadString(url, onDataSent);
+
+		delayThingSpeak.initializeMs(5000,TimerDelegate(&sendThingSpeak)).startOnce();
 #endif
 	}
 }
