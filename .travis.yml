@@ -35,3 +35,5 @@ script:
   - export ESPTOOL2=$TRAVIS_BUILD_DIR/opt/esp-alt-sdk/utils/esptool2
   - cd $TRAVIS_BUILD_DIR
   - make all 
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -X gcov
