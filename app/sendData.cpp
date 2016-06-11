@@ -26,9 +26,10 @@ HttpClient radmon;
 #ifdef useThingSpeak
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
+Timer delayThingSpeak;
 #endif
 
-Timer delayThingSpeak;
+
 String url;
 float cpm;
 float dose;
@@ -45,8 +46,8 @@ void onDataSent(HttpClient& client, bool successful)
 }
 
 
-void sendThingSpeak () {
 #ifdef useThingSpeak
+void sendThingSpeak () {
 		if (thingSpeak.isProcessing()) {
 			Debug.print("!!!!ThingSpeak not ready -> close");
 			thingSpeak.reset();
@@ -67,6 +68,7 @@ void sendThingSpeak () {
 		}
 
 }
+#endif
 
 void sendData(uint32 events, uint32 intervall, bool send) {
 
@@ -95,6 +97,7 @@ void sendData(uint32 events, uint32 intervall, bool send) {
 		}
 #endif
 
+#ifdef useThingSpeak
 		delayThingSpeak.initializeMs(5000,TimerDelegate(&sendThingSpeak)).startOnce();
 #endif
 	}
