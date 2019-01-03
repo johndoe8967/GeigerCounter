@@ -11,6 +11,7 @@
 
 
 void sendData(uint32 events, uint32 intervall,bool send);
+void sendDust(float p25, float p10);
 
 
 

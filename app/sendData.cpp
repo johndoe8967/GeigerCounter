@@ -26,6 +26,7 @@ HttpClient radmon;
 #ifdef useThingSpeak
 String ThingSpeakHost = "http://api.thingspeak.com";  // no need to change this
 HttpClient thingSpeak;
+HttpClient thingSpeakDust;
 Timer delayThingSpeak;
 #endif
 
@@ -69,6 +70,24 @@ void sendThingSpeak () {
 
 }
 #endif
+
+void sendDust (float p25, float p10) {
+	if (thingSpeakDust.isProcessing()) {
+		Debug.print("!!!!ThingSpeak not ready -> close");
+		thingSpeakDust.reset();
+	} else {
+		url = ThingSpeakHost;
+		url += "/update?key=";
+		url += AppSettings.tsAPIDust;
+		url += "&field1=";
+		url += p25;
+		url += "&field2=";
+		url += p10;
+		url += "&created_at=";
+		url += SystemClock.now(eTZ_UTC).toISO8601();
+		thingSpeakDust.downloadString(url, onDataSent);
+	}
+}
 
 void sendData(uint32 events, uint32 intervall, bool send) {
 

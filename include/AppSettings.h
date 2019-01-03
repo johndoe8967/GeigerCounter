@@ -26,6 +26,7 @@ struct ApplicationSettingsStorage
 	unsigned int measureTime = 60;
 	float doseRatio = 120;
 	String tsAPI;
+	String tsAPIDust;
 	String RadmonUser;
 	String RadmonPWD;
 	String WLANSSID;
@@ -51,6 +52,7 @@ struct ApplicationSettingsStorage
 #endif
 			doseRatio = geiger["doseRatio"];
 			tsAPI = geiger["thingspeak"].asString();
+			tsAPIDust = geiger["thingspeakDust"].asString();
 			RadmonUser = geiger["radmonuser"].asString();
 			RadmonPWD = geiger["radmonpwd"].asString();
 			WLANSSID = geiger["WLANSSID"].asString();
@@ -75,6 +77,7 @@ struct ApplicationSettingsStorage
 		geiger["doseRatio"] = doseRatio;
 
 		geiger["thingspeak"] = tsAPI;
+		geiger["thingspeakDust"] = tsAPIDust;
 		geiger["radmonuser"] = RadmonUser;
 		geiger["radmonpwd"] = RadmonPWD;
 		geiger["WLANSSID"] = WLANSSID;

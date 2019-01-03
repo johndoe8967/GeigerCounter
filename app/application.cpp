@@ -23,6 +23,7 @@
 #include "../include/sendData.h"
 #include "../include/SyncNtpDelegate.h"
 #include "../include/AppSettings.h"
+#include "../include/SDS011.h"
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
@@ -56,6 +57,9 @@ uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
 bool doMeasure;
 float doseRatio;
 bool online=true;
+
+SDS011 feinStaub;
+HardwareSerial feinStaubInterface(1);
 
 
 void IRAM_ATTR interruptHandler()
@@ -115,6 +119,20 @@ void connectFail()
 }
 
 void background() {
+int dustDelay = 0;
+	dustDelay++;
+	if (dustDelay%12==0) {
+		feinStaub.wakeup();
+	}
+	if (dustDelay%12==1) {
+		float p25;
+		float p10;
+		if (feinStaub.read(p25,p10)) {
+			sendDust(p25,p10);
+		}
+		feinStaub.sleep();
+	}
+
 	switch (mode) {
 	case mobile:
 		if (digitalRead(MODE_PIN)) {
@@ -151,6 +169,7 @@ void background() {
 		mode = mobile;
 		break;
 	}
+
 }
 
 
@@ -209,5 +228,7 @@ void init() {
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
 	attachInterrupt(INT_PIN, interruptHandler, RISING);
+
+	feinStaub.begin(&feinStaubInterface);
 
 }
