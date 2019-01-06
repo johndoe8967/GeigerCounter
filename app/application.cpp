@@ -5,11 +5,11 @@
  * a geiger counter application with IoT connection to ThingSpeak and Radmon
  *
  * detection of radioactive decay events on interrupt pin 0
- * 2 modes: stationary (wifi client) mobile (wifi SoftAP)
+ * 2 modes: stationary (wifi client) mobile (wifi SoftAP) depending on pin 2
+ *
+ * enhanced to measure air quality
  *
  * basic settings are changeable as telnet commands
- *
- * optional PWM output for high voltage generation (not tested, may has problem with PWM glitch)
  *
  * Created on June 5, 2016
  */
@@ -25,14 +25,8 @@
 #include "../include/AppSettings.h"
 #include "../include/SDS011.h"
 
-// If you want, you can define WiFi settings globally in Eclipse Environment Variables
-#ifndef WIFI_SSID
-	#define WIFI_SSID "PleaseEnterSSID" // Put you SSID and Password here
-	#define WIFI_PWD "PleaseEnterPass"
-#endif
-
-#define INT_PIN 0   // GPIO0
-#define MODE_PIN 2	// GPIO2
+#define INT_PIN 0   // GPIO0 to detect radiation (has to be true at boot)
+#define MODE_PIN 2	// GPIO2 to change mode (has to be true at boot)
 
 enum {stationary, mobile} mode;
 
@@ -46,28 +40,27 @@ Timer backgroundTimer;
 
 //Geiger Counter Variables
 uint32 event_counter;
-uint32 actMeasureIntervall = 0;				// last measure intervall in us
-uint32 setMeasureIntervall = 60000000;		// set value for measure intervall in us
-bool doMeasure;
+uint32 actMeasureInterval = 0;				// last measure intervall in us
+uint32 setMeasureInterval = 60000000;		// set value for measure intervall in us
 float doseRatio;
 bool online=true;
 
-SDS011 feinStaub;
-HardwareSerial feinStaubInterface(1);
+SDS011 feinStaub;							// particle sensor
+HardwareSerial feinStaubInterface(0);		// serial interface
 
 
 void IRAM_ATTR interruptHandler()
 {
-	event_counter++;
+	event_counter++;						// count radiation event
 }
 
-void Loop() {
+void taskMeasure() {						// cyclic measurement task 100ms
 	uint32 actMicros = micros();
-	auto actIntervall = actMicros - actMeasureIntervall;
-	bool stopMeasure= false;
+	auto actInterval = actMicros - actMeasureInterval;
+	bool stopMeasure = false;
 
-	if (setMeasureIntervall == 0) {
-		if ((event_counter >= 100) && (actIntervall > 15000000)) {
+	if (setMeasureInterval == 0) {			// if no measure interval is set then stop after 100 events or 15 seconds
+		if ((event_counter >= 100) && (actInterval > 15000000)) {
 			stopMeasure = true;
 		}
 	} else {
@@ -75,24 +68,20 @@ void Loop() {
 	}
 
 	if (stopMeasure) {
-//		detachInterrupt(INT_PIN);
-		actMeasureIntervall = actIntervall;
+		actMeasureInterval = actInterval;
 		// send Measurement
 		Debug.printf("Events: %ld ",event_counter);
-		Debug.printf("Interfall: %ld\r\n", actMeasureIntervall);
+		Debug.printf("Interfall: %ld\r\n", actMeasureInterval);
 
 		auto events = event_counter;
 		event_counter = 0;
-		sendData(events, actMeasureIntervall, online);
-		doMeasure = false;
-//		attachInterrupt(INT_PIN, interruptHandler, RISING);
-		actMeasureIntervall = actMicros;
-		doMeasure = true;
-		Debug.printf("start measure\r\n");
-		if (setMeasureIntervall==0) {
+		sendData(events, actMeasureInterval, online);
+		actMeasureInterval = actMicros;
+
+		if (setMeasureInterval==0) {		// is no measure interval is set check periodically with 100ms
 			measureTimer.setIntervalMs(100);
 		} else {
-			measureTimer.setIntervalUs(setMeasureIntervall-(micros()-actMicros));
+			measureTimer.setIntervalUs(setMeasureInterval-(micros()-actMicros));
 		}
 	}
 }
@@ -112,16 +101,16 @@ void connectFail()
 	WifiStation.waitConnection(connectOk, 10, connectFail); // Repeat and check again
 }
 
-void background() {
+void taskBackground() {
 int dustDelay = 0;
-	dustDelay++;
-	if (dustDelay%12==0) {
+	dustDelay++;						// increase every 5 seconds
+	if (dustDelay%12==0) {				// wake up sensor every 60s
 		feinStaub.wakeup();
 	}
-	if (dustDelay%12==1) {
+	if (dustDelay%12==1) {				// wait 5s after wakeup to receive data and sleep again
 		float p25;
 		float p10;
-		if (feinStaub.read(p25,p10)) {
+		if (feinStaub.read(p25,p10)) {	// read and send measurement
 			sendDust(p25,p10);
 		}
 		feinStaub.sleep();
@@ -129,13 +118,11 @@ int dustDelay = 0;
 
 	switch (mode) {
 	case mobile:
-		if (digitalRead(MODE_PIN)) {
+		if (digitalRead(MODE_PIN)) {		// switch to stationary mode
 			mode = stationary;
 			WifiAccessPoint.enable(false);
 
 			WifiStation.enable(true);
-			debugf("SSID: %s", AppSettings.WLANSSID.c_str());
-			debugf("PWD: %s", AppSettings.WLANPWD.c_str());
 			WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 			WifiStation.waitConnection(connectOk, 30, connectFail); // We recommend 20+ seconds at start
 
@@ -143,10 +130,10 @@ int dustDelay = 0;
 		break;
 	case stationary:
 		if (syncNTP) {
-			online = syncNTP->valid;
+			online = syncNTP->valid;		// check for valid network time
 		}
 
-		if (!digitalRead(MODE_PIN)) {
+		if (!digitalRead(MODE_PIN)) {		// switch to mobile mode
 			mode = mobile;
 			online = false;
 
@@ -166,18 +153,17 @@ int dustDelay = 0;
 
 }
 
-
 void setTime(unsigned int time) {
 	if (time <= 3600) {
 		uint32 timeus = time*1000000;
 		Debug.printf("measuretime: %ld\r\n", timeus);
-		setMeasureIntervall = timeus;
+		setMeasureInterval = timeus;
 	}
 }
 
 void init() {
-	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
-	Serial.systemDebugOutput(false); // Enable debug output to serial
+//	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
+//	Serial.systemDebugOutput(false); // Enable debug output to serial
 
 	delayMilliseconds(1000);
 
@@ -185,7 +171,7 @@ void init() {
 
 
 	commandHandler.registerSystemCommands();
-	commands.init(SetPWMDelegate(&setPWM),SetTimeDelegate(&setTime));
+	commands.init(SetTimeDelegate(&setTime));
 
 	AppSettings.load();
 
@@ -202,8 +188,8 @@ void init() {
 
 
 	// init timer for first start after 100ms
-	measureTimer.initializeMs(100,TimerDelegate(&Loop)).start();
-	backgroundTimer.initializeMs(5000,TimerDelegate(&background)).start();
+	measureTimer.initializeMs(100,TimerDelegate(&taskMeasure)).start();
+	backgroundTimer.initializeMs(5000,TimerDelegate(&taskBackground)).start();
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
