@@ -45,7 +45,6 @@ void CommandClass::init(SetTimeDelegate timeDelegate)
 		measureTime = AppSettings.measureTime;
 		doseRatio = AppSettings.doseRatio;
 	} else {
-		AppSettings.tsAPI = "---";
 		SaveSettings();
 	}
 
@@ -53,6 +52,8 @@ void CommandClass::init(SetTimeDelegate timeDelegate)
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapiDust","set thingspeak API Dust","Application",commandFunctionDelegate(&CommandClass::processSetTSAPIDust,this)));
+	commandHandler.registerCommand(CommandDelegate("setradmonuser","set radmon user","Application",commandFunctionDelegate(&CommandClass::processSetRadmonUser,this)));
+	commandHandler.registerCommand(CommandDelegate("setradmonpwd","set radmon pwd","Application",commandFunctionDelegate(&CommandClass::processSetRadmonPwd,this)));
 	commandHandler.registerCommand(CommandDelegate("setssid","set wifi ssid","Application",commandFunctionDelegate(&CommandClass::processSetWIFISSID,this)));
 	commandHandler.registerCommand(CommandDelegate("setpwd","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
@@ -141,8 +142,8 @@ void CommandClass::processTSAPI(String commandLine, CommandOutput* commandOutput
 
 	if (numToken == 1)
 	{
-		commandOutput->printf("status : Show ThingSpeak API\r\n");
-		commandOutput->printf("<value>: Set ThingSpeak API\r\n");
+		commandOutput->printf("status : Show API\r\n");
+		commandOutput->printf("<value>: Set API\r\n");
 	}
 	else
 	{
@@ -164,6 +165,14 @@ void CommandClass::processSetTSAPIDust(String commandLine, CommandOutput* comman
 void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOutput)
 {
 	processTSAPI(commandLine, commandOutput, &AppSettings.tsAPI);
+}
+void CommandClass::processSetRadmonUser(String commandLine, CommandOutput* commandOutput)
+{
+	processTSAPI(commandLine, commandOutput, &AppSettings.RadmonUser);
+}
+void CommandClass::processSetRadmonPwd(String commandLine, CommandOutput* commandOutput)
+{
+	processTSAPI(commandLine, commandOutput, &AppSettings.RadmonPWD);
 }
 
 void CommandClass::processSetWIFISSID(String commandLine, CommandOutput* commandOutput)

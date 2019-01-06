@@ -53,7 +53,7 @@ void sendThingSpeak () {
 			Debug.print("!!!!ThingSpeak not ready -> close");
 			thingSpeak.reset();
 		} else {
-			Debug.print("Delayed sebd ThingSpeak\r\n");
+			Debug.print("Delayed send ThingSpeak\r\n");
 			url = ThingSpeakHost;
 			url += "/update?key=";
 			url += AppSettings.tsAPI;

@@ -35,6 +35,8 @@ private:
 	void processSetDoseRatio(String commandLine, CommandOutput* commandOutput);
 	void processSetTSAPI(String commandLine, CommandOutput* commandOutput);
 	void processSetTSAPIDust(String commandLine, CommandOutput* commandOutput);
+	void processSetRadmonUser(String commandLine, CommandOutput* commandOutput);
+	void processSetRadmonPwd(String commandLine, CommandOutput* commandOutput);
 	void processTSAPI(String commandLine, CommandOutput* commandOutput, String *tsAPI);
 	void processSetWIFIPWD(String commandLine, CommandOutput* commandOutput);
 	void processSetWIFISSID(String commandLine, CommandOutput* commandOutput);

@@ -29,10 +29,10 @@
 
 ## MacOS / Linux:
 # COM_PORT = /dev/tty.usbserial
-COM_PORT = /dev/ttyAMA0
+COM_PORT = /dev/tty.usbserial-A800GJE0
 
 ## Com port speed
-# COM_SPEED	= 115200
+COM_SPEED	= 230400
 
 ## Configure flash parameters (for ESP12-E and other new boards):
 # SPI_MODE = dio
@@ -40,4 +40,5 @@ COM_PORT = /dev/ttyAMA0
 ## SPIFFS options
 # DISABLE_SPIFFS = 1
 SPIFF_FILES = files
+
 

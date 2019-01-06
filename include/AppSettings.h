@@ -50,6 +50,8 @@ struct ApplicationSettingsStorage
 			WLANPWD = geiger["WLANPWD"].asString();
 
 			delete[] jsonString;
+		} else {
+			save();
 		}
 	}
 
@@ -57,7 +59,6 @@ struct ApplicationSettingsStorage
 	{
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject& root = jsonBuffer.createObject();
-
 		JsonObject& geiger = jsonBuffer.createObject();
 		root["geiger"] = geiger;
 		geiger["measureTime"] = measureTime;

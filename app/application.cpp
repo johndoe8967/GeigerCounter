@@ -35,20 +35,21 @@ CommandClass commands;
 
 ApplicationSettingsStorage AppSettings;
 
-Timer measureTimer;
+SDS011 feinStaub;							// particle sensor
+HardwareSerial feinStaubInterface(0);		// serial interface
+
 Timer backgroundTimer;
 
+bool online=true;
+
+#define geiger
+#ifdef geiger
 //Geiger Counter Variables
 uint32 event_counter;
 uint32 actMeasureInterval = 0;				// last measure intervall in us
 uint32 setMeasureInterval = 60000000;		// set value for measure intervall in us
 float doseRatio;
-bool online=true;
-
-SDS011 feinStaub;							// particle sensor
-HardwareSerial feinStaubInterface(0);		// serial interface
-
-
+Timer measureTimer;
 void IRAM_ATTR interruptHandler()
 {
 	event_counter++;						// count radiation event
@@ -85,13 +86,13 @@ void taskMeasure() {						// cyclic measurement task 100ms
 		}
 	}
 }
-
+#endif
 
 // Will be called when WiFi station was connected to AP
 void connectOk()
 {
+	debugf("started WIFI station\r\n");
 	if (!syncNTP) syncNTP = new SyncNTP();
-
 }
 
 // Will be called when WiFi station timeout was reached
@@ -102,17 +103,22 @@ void connectFail()
 }
 
 void taskBackground() {
-int dustDelay = 0;
+static int dustDelay;
 	dustDelay++;						// increase every 5 seconds
-	if (dustDelay%12==0) {				// wake up sensor every 60s
+	Debug.printf("background %d\r\n",dustDelay%24);
+	if ((dustDelay%24)==0) {			// wake up sensor every 120s
+		Debug.printf("wake up sensor\r\n");
 		feinStaub.wakeup();
 	}
-	if (dustDelay%12==1) {				// wait 5s after wakeup to receive data and sleep again
+	if ((dustDelay%24)==5) {			// wait 30s after wakeup to receive data and sleep again
 		float p25;
 		float p10;
+		Debug.printf("read sensor\r\n");
 		if (feinStaub.read(p25,p10)) {	// read and send measurement
+			Debug.printf("new Sensorvalue\r\n");
 			sendDust(p25,p10);
 		}
+		Debug.printf("sleep sensor\r\n");
 		feinStaub.sleep();
 	}
 
@@ -121,6 +127,8 @@ int dustDelay = 0;
 		if (digitalRead(MODE_PIN)) {		// switch to stationary mode
 			mode = stationary;
 			WifiAccessPoint.enable(false);
+
+			Debug.printf("start WIFI station\r\n");
 
 			WifiStation.enable(true);
 			WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
@@ -154,11 +162,13 @@ int dustDelay = 0;
 }
 
 void setTime(unsigned int time) {
+#ifdef geiger
 	if (time <= 3600) {
 		uint32 timeus = time*1000000;
 		Debug.printf("measuretime: %ld\r\n", timeus);
 		setMeasureInterval = timeus;
 	}
+#endif
 }
 
 void init() {
@@ -169,32 +179,35 @@ void init() {
 
 	spiffs_mount(); // Mount file system, in order to work with files
 
-
 	commandHandler.registerSystemCommands();
 	commands.init(SetTimeDelegate(&setTime));
 
 	AppSettings.load();
+	debugf("SSID %s",AppSettings.WLANSSID.c_str());
+	debugf("PWD %s",AppSettings.WLANPWD.c_str());
 
 	mode = mobile;
 
+//	WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 	WifiStation.enable(false);
-	WifiStation.config(AppSettings.WLANSSID,AppSettings.WLANPWD);
 
+//	WifiAccessPoint.config("RadMon","RadMon", AUTH_WPA_PSK);
 	WifiAccessPoint.enable(false);
-	WifiAccessPoint.config("RadMon","RadMon", AUTH_WPA_PSK);
 
 	pinMode(INT_PIN, INPUT);
 	pinMode(MODE_PIN,INPUT);
 
-
+#ifdef geiger
 	// init timer for first start after 100ms
 	measureTimer.initializeMs(100,TimerDelegate(&taskMeasure)).start();
+	attachInterrupt(INT_PIN, interruptHandler, RISING);
+#endif
 	backgroundTimer.initializeMs(5000,TimerDelegate(&taskBackground)).start();
 
 	// set timezone hourly difference to UTC
 	SystemClock.setTimeZone(2);
-	attachInterrupt(INT_PIN, interruptHandler, RISING);
 
 	feinStaub.begin(&feinStaubInterface);
+	debugf("serial HW started Interface ");
 
 }

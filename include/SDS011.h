@@ -8,6 +8,7 @@
 //		- The iNovaFitness SDS011 datasheet
 //
 #include <SmingCore/SmingCore.h>
+#include <Debug.h>
 
 
 class SDS011 {
