@@ -6,11 +6,9 @@
  * setdoseratio | Application | set cpm/uSv ratio
  * settsapi | Application | set thingspeak API
  * setssid | Application | set wifi ssid
- * setpwd | Application | set wifi pwd
  * debugtelneton | Application | Set telnet debug on
  * debugtelnetoff | Application | Set telnet debug off
  *
- * usage of pwm optional
  *
  * Created on June 5, 2016
  */
@@ -54,6 +52,7 @@ void CommandClass::init(SetTimeDelegate timeDelegate)
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&CommandClass::processSetTime,this)));
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
+	commandHandler.registerCommand(CommandDelegate("settsapiDust","set thingspeak API Dust","Application",commandFunctionDelegate(&CommandClass::processSetTSAPIDust,this)));
 	commandHandler.registerCommand(CommandDelegate("setssid","set wifi ssid","Application",commandFunctionDelegate(&CommandClass::processSetWIFISSID,this)));
 	commandHandler.registerCommand(CommandDelegate("setpwd","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
@@ -90,7 +89,7 @@ void CommandClass::processSetTime(String commandLine, CommandOutput* commandOutp
 	if (numToken == 1)
 	{
 		commandOutput->printf("auto : auto measure until 100 events\r\n");
-		commandOutput->printf("status : Show pwm status\r\n");
+		commandOutput->printf("status : Show time status\r\n");
 		commandOutput->printf("<value>: Set time in seconds\r\n");
 	}
 	else
@@ -136,9 +135,7 @@ void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* comman
 		SaveSettings();
 	}
 }
-
-void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOutput)
-{
+void CommandClass::processTSAPI(String commandLine, CommandOutput* commandOutput, String *tsAPI) {
 	Vector<String> commandToken;
 	int numToken = splitString(commandLine, ' ' , commandToken);
 
@@ -150,15 +147,23 @@ void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOut
 	else
 	{
 		if (commandToken[1] == "status") {
-			commandOutput->printf("API %s\r\n",AppSettings.tsAPI.c_str());
+			commandOutput->printf("API %s\r\n",tsAPI->c_str());
 		} else {
 			auto value = commandToken[1];
-			AppSettings.tsAPI = value;
-			commandOutput->printf("API %s\r\n",AppSettings.tsAPI.c_str());
+			*tsAPI = value;
+			commandOutput->printf("API %s\r\n",tsAPI->c_str());
 		}
 		SaveSettings();
-
 	}
+}
+void CommandClass::processSetTSAPIDust(String commandLine, CommandOutput* commandOutput)
+{
+	processTSAPI(commandLine, commandOutput, &AppSettings.tsAPIDust);
+}
+
+void CommandClass::processSetTSAPI(String commandLine, CommandOutput* commandOutput)
+{
+	processTSAPI(commandLine, commandOutput, &AppSettings.tsAPI);
 }
 
 void CommandClass::processSetWIFISSID(String commandLine, CommandOutput* commandOutput)
