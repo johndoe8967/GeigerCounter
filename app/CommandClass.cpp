@@ -33,14 +33,10 @@ CommandClass::~CommandClass()
 void CommandClass::SaveSettings() {
 	AppSettings.measureTime = measureTime;
 	AppSettings.doseRatio = doseRatio;
-#ifdef USEPWM
-	AppSettings.pwmDuty = pwmDuty;
-	AppSettings.pwmState = pwmState;
-#endif
 	AppSettings.save();
 }
 
-void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate)
+void CommandClass::init(SetTimeDelegate timeDelegate)
 {
 	telnet->enableDebug(true);
 	telnet-> listen(23);
@@ -49,19 +45,12 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 
 	if (AppSettings.exist()) {
 		measureTime = AppSettings.measureTime;
-#ifdef USEPWM
-		pwmDuty = AppSettings.pwmDuty;
-		pwmState = AppSettings.pwmState;
-#endif
 		doseRatio = AppSettings.doseRatio;
 	} else {
 		AppSettings.tsAPI = "---";
 		SaveSettings();
 	}
 
-#ifdef USEPWM
-	commandHandler.registerCommand(CommandDelegate("setpwm","set pwm duty cycle","Application",commandFunctionDelegate(&CommandClass::processSetPWMCmd,this)));
-#endif
 	commandHandler.registerCommand(CommandDelegate("settime","set measure time","Application",commandFunctionDelegate(&CommandClass::processSetTime,this)));
 	commandHandler.registerCommand(CommandDelegate("setdoseratio","set cpm/uSv ratio","Application",commandFunctionDelegate(&CommandClass::processSetDoseRatio,this)));
 	commandHandler.registerCommand(CommandDelegate("settsapi","set thingspeak API","Application",commandFunctionDelegate(&CommandClass::processSetTSAPI,this)));
@@ -69,17 +58,6 @@ void CommandClass::init(SetPWMDelegate pwmDelegate, SetTimeDelegate timeDelegate
 	commandHandler.registerCommand(CommandDelegate("setpwd","set wifi pwd","Application",commandFunctionDelegate(&CommandClass::processSetWIFIPWD,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelneton","Set telnet debug on","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOn,this)));
 	commandHandler.registerCommand(CommandDelegate("debugtelnetoff","Set telnet debug off","Application",commandFunctionDelegate(&CommandClass::setTelnetDebugOff,this)));
-
-#ifdef USEPWM
-	setPWM = pwmDelegate;
-	if (setPWM) {
-		if (pwmState) {
-			setPWM(pwmDuty);
-		} else {
-			setPWM(0);
-		}
-	}
-#endif
 
 	setTime = timeDelegate;
 	if (setTime) {
@@ -135,48 +113,6 @@ void CommandClass::processSetTime(String commandLine, CommandOutput* commandOutp
 		SaveSettings();
 	}
 }
-
-#ifdef USEPWM
-void CommandClass::processSetPWMCmd(String commandLine, CommandOutput* commandOutput)
-{
-	Vector<String> commandToken;
-	int numToken = splitString(commandLine, ' ' , commandToken);
-
-	if (numToken == 1)
-	{
-		commandOutput->printf("on   : Set pwm ON\r\n");
-		commandOutput->printf("off  : Set pwm OFF\r\n");
-		commandOutput->printf("status : Show pwm status\r\n");
-		commandOutput->printf("<value>: Set duty cycle\r\n");
-	}
-	else
-	{
-		if (commandToken[1] == "on") {
-			pwmState = true;
-			commandOutput->printf("pwm ON\r\n");
-		} else if (commandToken[1] == "off") {
-			pwmState = false;
-			commandOutput->printf("pwm OFF\r\n");
-		} else if (commandToken[1] == "status") {
-			String tempString = pwmState ? "ON" : "OFF";
-			commandOutput->printf("pwm is %s with %d%%\r\n",tempString.c_str(),pwmDuty);
-		} else {
-			auto value = commandToken[1];
-			pwmDuty = value.toInt();
-			if (pwmDuty > 100) pwmDuty = 100;
-			commandOutput->printf("pwm is %d%%\r\n", pwmDuty);
-		}
-		if (setPWM) {
-			if (pwmState) {
-				setPWM(pwmDuty);
-			} else {
-				setPWM(0);
-			}
-		}
-		SaveSettings();
-	}
-}
-#endif
 
 void CommandClass::processSetDoseRatio(String commandLine, CommandOutput* commandOutput)
 {

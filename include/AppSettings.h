@@ -18,11 +18,6 @@
 
 struct ApplicationSettingsStorage
 {
-#ifdef USEPWM
-	unsigned int pwmDuty = 0;
-	bool pwmState = true;
-#endif
-
 	unsigned int measureTime = 60;
 	float doseRatio = 120;
 	String tsAPI;
@@ -46,10 +41,6 @@ struct ApplicationSettingsStorage
 
 			JsonObject& geiger = root["geiger"];
 			measureTime = geiger["measureTime"];
-#ifdef USEPWM
-			pwmDuty = geiger["duty"];
-			pwmState = geiger["pwmstate"];
-#endif
 			doseRatio = geiger["doseRatio"];
 			tsAPI = geiger["thingspeak"].asString();
 			tsAPIDust = geiger["thingspeakDust"].asString();
@@ -70,12 +61,7 @@ struct ApplicationSettingsStorage
 		JsonObject& geiger = jsonBuffer.createObject();
 		root["geiger"] = geiger;
 		geiger["measureTime"] = measureTime;
-#ifdef USEPWM
-		geiger["duty"] = pwmDuty;
-		geiger["pwmstate"] = pwmState;
-#endif
 		geiger["doseRatio"] = doseRatio;
-
 		geiger["thingspeak"] = tsAPI;
 		geiger["thingspeakDust"] = tsAPIDust;
 		geiger["radmonuser"] = RadmonUser;

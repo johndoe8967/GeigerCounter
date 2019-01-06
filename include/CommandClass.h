@@ -20,7 +20,7 @@ class CommandClass
 public:
 	CommandClass();
 	virtual ~CommandClass();
-	void init(SetPWMDelegate delegate, SetTimeDelegate delegate2);
+	void init(SetTimeDelegate delegate2);
 
 private:
 	TelnetServer *telnet;

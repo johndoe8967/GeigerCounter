@@ -36,12 +36,6 @@
 
 enum {stationary, mobile} mode;
 
-#ifdef USEPWM
-#define PWM_PIN 2	// GPIO2
-uint8_t pwm_pin[1] = { PWM_PIN }; // List of pins that you want to connect to pwm
-HardwarePWM HW_pwm(pwm_pin, 1);
-#endif
-
 SyncNTP *syncNTP;
 CommandClass commands;
 
@@ -173,16 +167,6 @@ int dustDelay = 0;
 }
 
 
-void setPWM(unsigned int duty) {
-#ifdef USEPWM
-	if (duty <= 100) {
-		auto ontime = duty*HW_pwm.getMaxDuty()/100;
-		Debug.printf("pwm ontime: %d\r\n",ontime);
-		HW_pwm.analogWrite(PWM_PIN, ontime);
-
-	}
-#endif
-}
 void setTime(unsigned int time) {
 	if (time <= 3600) {
 		uint32 timeus = time*1000000;
@@ -216,10 +200,6 @@ void init() {
 	pinMode(INT_PIN, INPUT);
 	pinMode(MODE_PIN,INPUT);
 
-	// Setting PWM period to 2,5kHz
-#ifdef USEPWM
-	HW_pwm.setPeriod(1000);
-#endif
 
 	// init timer for first start after 100ms
 	measureTimer.initializeMs(100,TimerDelegate(&Loop)).start();
